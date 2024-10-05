@@ -21,13 +21,15 @@ handlers:
     args: |
       -c "
       # Make Platform API call to create workflow manual approval
-      response=$(curl --fail-with-body  -X 'POST' \"$URL/v1/workflows/approval\" -H \"Authorization: Bearer $API_TOKEN\" -H 'Content-Type: application/json' -d '{\"approvers\": \"'\"$APPROVERS\"'\", \"instruction\": \"'\"$INSTRUCTION\"'\", \"disallowLaunchByUser\": \"$DISALLOW_LAUNCHED_BY_USER\"}') || command_failed=1
+      #TODO: TEMP
+      #response=$(curl --fail-with-body  -X POST \"$URL/v1/workflows/approval\" -H \"Authorization: Bearer $API_TOKEN\" -H 'Content-Type: application/json' -d '{\"approvers\": \"'\"$APPROVERS\"'\", \"instruction\": \"'\"$INSTRUCTION\"'\", \"disallowLaunchByUser\": \"$DISALLOW_LAUNCHED_BY_USER\"}') || command_failed=1
+      #END-TEMP
       
       # Check curl exit code
       if [ ${command_failed:-0} -eq 1 ];
       then
         echo \"Platform API call failed with error: '$response'\"
-        #TEMP
+        #TODO: TEMP
         echo \"Approvers: $APPROVERS\"
         echo \"DisallowLaunchByUser: $DISALLOW_LAUNCHED_BY_USER\"
         echo \"Instruction: $INSTRUCTION\"
@@ -64,7 +66,7 @@ handlers:
       EXTRACTED_STATUS=$(echo \"$PAYLOAD\" | grep -oP '(?<=\"status\": \")[^\"]*')
       
       # Make Platform API call to change workflow manual approval status
-      response=$(curl --fail-with-body  -X 'POST' \"$URL/v1/workflows/approval/status\" -H \"Authorization: Bearer $API_TOKEN\" -H 'Content-Type: application/json' -d \"$PAYLOAD\") || command_failed=1
+      response=$(curl --fail-with-body  -X POST \"$URL/v1/workflows/approval/status\" -H \"Authorization: Bearer $API_TOKEN\" -H 'Content-Type: application/json' -d \"$PAYLOAD\") || command_failed=1
       
       # Check curl exit code
       if [ ${command_failed:-0} -eq 1 ];
@@ -98,7 +100,7 @@ handlers:
     args: |
       -c "
       # Make Platform API call to change workflow manual approval status
-      response=$(curl --fail-with-body  -X 'POST' \"$URL/v1/workflows/approval/status\" -H \"Authorization: Bearer $API_TOKEN\" -H 'Content-Type: application/json' -d '{\"status\": \"$CANCELLATION_REASON\"}') || command_failed=1
+      response=$(curl --fail-with-body  -X POST \"$URL/v1/workflows/approval/status\" -H \"Authorization: Bearer $API_TOKEN\" -H 'Content-Type: application/json' -d '{\"status\": \"$CANCELLATION_REASON\"}') || command_failed=1
       
       # Check curl exit code
       if [ ${command_failed:-0} -eq 1 ];
