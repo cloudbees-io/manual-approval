@@ -23,18 +23,18 @@ handlers:
       # Make Platform API call to create workflow manual approval
       #TODO: TEMP
       #response=$(curl --fail-with-body  -X POST \"$URL/v1/workflows/approval\" -H \"Authorization: Bearer $API_TOKEN\" -H 'Content-Type: application/json' -d '{\"approvers\": \"'\"$APPROVERS\"'\", \"instruction\": \"'\"$INSTRUCTION\"'\", \"disallowLaunchByUser\": \"$DISALLOW_LAUNCHED_BY_USER\"}') || command_failed=1
+      
+      echo \"Approvers: $APPROVERS\"
+      echo \"DisallowLaunchByUser: $DISALLOW_LAUNCHED_BY_USER\"
+      echo \"Instruction: $INSTRUCTION\"
+      command_failed=0
       #END-TEMP
       
       # Check curl exit code
       if [ ${command_failed:-0} -eq 1 ];
       then
         echo \"Platform API call failed with error: '$response'\"
-        #TODO: TEMP
-        echo \"Approvers: $APPROVERS\"
-        echo \"DisallowLaunchByUser: $DISALLOW_LAUNCHED_BY_USER\"
-        echo \"Instruction: $INSTRUCTION\"
-        #END-TEMP
-
+        
         # Save failure
         echo '{    
           \"status\": \"FAILED\",
