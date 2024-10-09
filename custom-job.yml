@@ -91,12 +91,12 @@ handlers:
       if [ "$APPROVED" == "true" ]; 
       then
         APPROVAL_STATUS="APPROVED"
-        echo "Approval comments:"
+        echo 'Approval comments:'
       else
         APPROVAL_STATUS="REJECTED"
-        echo "Rejection comments:"
-        echo $COMMENTS
+        echo 'Rejection comments:'
       fi
+      echo '$COMMENTS'
       
       echo '{    
         \"status\": '\\\"$APPROVAL_STATUS\\\"',
