@@ -96,7 +96,7 @@ handlers:
         APPROVAL_STATUS="REJECTED"
         echo 'Rejection comments:'
       fi
-      echo \"'$COMMENTS'\"
+      echo \"$COMMENTS\"
       
       echo '{    
         \"status\": '\\\"$APPROVAL_STATUS\\\"',
