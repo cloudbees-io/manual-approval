@@ -66,8 +66,17 @@ handlers:
     command: /bin/sh
     args: |
       -c """
-      # Extract status field value from the payload in JSON format
-      EXTRACTED_STATUS=$(echo \"$PAYLOAD\" | /usr/bin/jq -r '.status')
+      # TODO: debug
+      echo $PAYLOAD
+      
+      # Extract approved field value from the payload in JSON format
+      APPROVED=$(echo \"$PAYLOAD\" | /usr/bin/jq -r '.approved')
+      if [ "$APPROVED" == "true" ]; 
+      then
+        APPROVAL_STATUS="APPROVED"
+      else
+        APPROVAL_STATUS="REJECTED"
+      fi
       
       # Make Platform API call to change workflow manual approval status
       response=$(curl --fail-with-body  -X POST \"$URL/v1/workflows/approval/status\" -H \"Authorization: Bearer $API_TOKEN\" -H 'Content-Type: application/json' -d \"$PAYLOAD\") || command_failed=1
@@ -88,7 +97,7 @@ handlers:
 
       # Save success
       echo '{    
-        \"status\": '\\\"$EXTRACTED_STATUS\\\"',
+        \"status\": "$APPROVAL_STATUS",
         \"message\": \"Successfully changed workflow manual approval status\"
       }' > $CLOUDBEES_STATUS
       """
