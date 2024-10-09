@@ -66,20 +66,9 @@ handlers:
     command: /bin/sh
     args: |
       -c """
-      # TODO: debug
-      echo $PAYLOAD
-      
-      # Extract approved field value from the payload in JSON format
+      # Extract approved and comments fields from the payload in JSON format
       APPROVED=$(echo \"$PAYLOAD\" | /usr/bin/jq -r '.approved')
-      if [ "$APPROVED" == "true" ]; 
-      then
-        APPROVAL_STATUS="APPROVED"
-      else
-        APPROVAL_STATUS="REJECTED"
-      fi
-      
-      # TODO: debug
-      echo "Approval status to set on success: $APPROVAL_STATUS"
+      COMMENTS=$(echo \"$PAYLOAD\" | /usr/bin/jq -r '.comments')
       
       # Make Platform API call to change workflow manual approval status
       response=$(curl --fail-with-body  -X POST \"$URL/v1/workflows/approval/status\" -H \"Authorization: Bearer $API_TOKEN\" -H 'Content-Type: application/json' -d \"$PAYLOAD\") || command_failed=1
@@ -99,6 +88,16 @@ handlers:
       fi
 
       # Save success
+      if [ "$APPROVED" == "true" ]; 
+      then
+        APPROVAL_STATUS="APPROVED"
+        echo "Approval comments:"
+      else
+        APPROVAL_STATUS="REJECTED"
+        echo "Rejection comments:"
+        echo $COMMENTS
+      fi
+      
       echo '{    
         \"status\": '\\\"$APPROVAL_STATUS\\\"',
         \"message\": \"Successfully changed workflow manual approval status\"
