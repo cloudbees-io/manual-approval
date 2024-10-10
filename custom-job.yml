@@ -81,7 +81,7 @@ handlers:
       echo \"Payload: '$PAYLOAD'\"
       
       # Extract approved and comments fields from the payload in JSON format
-      APPROVED=$(echo \"$PAYLOAD\" | /usr/bin/jq -r '.approved')
+      APPROVAL_STATUS=$(echo \"$PAYLOAD\" | /usr/bin/jq -r '.status')
       COMMENTS=$(echo \"$PAYLOAD\" | /usr/bin/jq -r '.comments')
       
       # Make Platform API call to change workflow manual approval status
@@ -102,16 +102,22 @@ handlers:
       fi
 
       #TODO:
-      echo \"Approved? '$APPROVED'\"
+      echo \"Approved? '$APPROVAL_STATUS'\"
       
       # Save success
-      if [ "$APPROVED" == "true" ]; 
+      if [ "$APPROVAL_STATUS" == "UPDATE_MANUAL_APPROVAL_STATUS_APPROVED" ]; 
       then
-        APPROVAL_STATUS="APPROVED"
         echo 'Approval comments:'
-      else
-        APPROVAL_STATUS="REJECTED"
+      elif [ "$APPROVAL_STATUS" == "UPDATE_MANUAL_APPROVAL_STATUS_REJECTED" ]; 
         echo 'Rejection comments:'
+      else
+        echo \"Error: Unexpected approval status '$APPROVAL_STATUS'\"
+        echo '{    
+          \"status\": \"FAILED\",
+          \"message\": \"Unexpected approval status encountered: '$APPROVAL_STATUS'\"
+        }' > $CLOUDBEES_STATUS
+      
+        exit 1
       fi
       echo \"$COMMENTS\"
       
