@@ -76,6 +76,10 @@ handlers:
     command: /bin/sh
     args: |
       -c """
+      
+      #TODO:
+      echo \"Payload: '$PAYLOAD'\"
+      
       # Extract approved and comments fields from the payload in JSON format
       APPROVED=$(echo \"$PAYLOAD\" | /usr/bin/jq -r '.approved')
       COMMENTS=$(echo \"$PAYLOAD\" | /usr/bin/jq -r '.comments')
@@ -97,6 +101,9 @@ handlers:
         exit 1
       fi
 
+      #TODO:
+      echo \"Approved? '$APPROVED'\"
+      
       # Save success
       if [ "$APPROVED" == "true" ]; 
       then
