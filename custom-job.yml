@@ -108,7 +108,8 @@ handlers:
       if [ "$APPROVAL_STATUS" == "UPDATE_MANUAL_APPROVAL_STATUS_APPROVED" ]; 
       then
         echo 'Approval comments:'
-      elif [ "$APPROVAL_STATUS" == "UPDATE_MANUAL_APPROVAL_STATUS_REJECTED" ]; 
+      elif [ "$APPROVAL_STATUS" == "UPDATE_MANUAL_APPROVAL_STATUS_REJECTED" ];
+      then
         echo 'Rejection comments:'
       else
         echo \"Error: Unexpected approval status '$APPROVAL_STATUS'\"
