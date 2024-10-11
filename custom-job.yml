@@ -101,15 +101,8 @@ handlers:
       # To avoid issue 'argument list too long' use file
       echo \"$PAYLOAD\" > /tmp/content.json
       
-      # If debugging, turn on verbose flag for curl otherwise run in silent mode by default
-      if [ "x$DEBUG" == "xtrue" ]; 
-        CURL_OPS="-v"
-      then
-        CURL_OPS="-s"
-      fi
-      
       # Make Platform API call to change workflow manual approval status
-      response=$(curl $CURL_OPS --fail-with-body  -X POST \"$URL/v1/workflows/approval/status\" -H \"Authorization: Bearer $API_TOKEN\" -H 'Content-Type: application/json' --data-binary \"@/tmp/content.json\") || command_failed=1
+      response=$(curl -s --fail-with-body  -X POST \"$URL/v1/workflows/approval/status\" -H \"Authorization: Bearer $API_TOKEN\" -H 'Content-Type: application/json' --data-binary \"@/tmp/content.json\") || command_failed=1
       
       # Check curl exit code
       if [ ${command_failed:-0} -eq 1 ];
