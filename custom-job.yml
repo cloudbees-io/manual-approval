@@ -77,9 +77,6 @@ handlers:
     args: |
       -c """
       
-      #TODO:
-      echo \"Payload: '$PAYLOAD'\"
-      
       # Extract approved and comments fields from the payload in JSON format
       APPROVAL_STATUS=$(echo \"$PAYLOAD\" | /usr/bin/jq -r '.status')
       COMMENTS=$(echo \"$PAYLOAD\" | /usr/bin/jq -r '.comments')
@@ -101,15 +98,14 @@ handlers:
         exit 1
       fi
 
-      #TODO:
-      echo \"Approved? '$APPROVAL_STATUS'\"
-      
       # Save success
       if [ "$APPROVAL_STATUS" == "UPDATE_MANUAL_APPROVAL_STATUS_APPROVED" ]; 
       then
+        JOB_STATUS="APPROVED"
         echo 'Approval comments:'
       elif [ "$APPROVAL_STATUS" == "UPDATE_MANUAL_APPROVAL_STATUS_REJECTED" ];
       then
+        JOB_STATUS="REJECTED"
         echo 'Rejection comments:'
       else
         echo \"Error: Unexpected approval status '$APPROVAL_STATUS'\"
@@ -123,7 +119,7 @@ handlers:
       echo \"$COMMENTS\"
       
       echo '{    
-        \"status\": '\\\"$APPROVAL_STATUS\\\"',
+        \"status\": '\\\"$JOB_STATUS\\\"',
         \"message\": \"Successfully changed workflow manual approval status\"
       }' > $CLOUDBEES_STATUS
       """
