@@ -13,6 +13,10 @@ inputs:
   disallowLaunchByUser:
     description: For separation of responsibilities, if true, then the user who launched the workflow is not allowed to approve.
     required: false
+  debug:
+    description: Set to true to enable debug logging.
+    default: false
+    required: false
 
 handlers:
   init:
@@ -85,8 +89,10 @@ handlers:
     args: |
       -c """
       
-      #TODO: remove after debugging
-      echo \"DEBUG: Payload: '$PAYLOAD'\"
+      if [ "x$DEBUG" == "xtrue" ]; 
+      then
+        echo \"DEBUG: Incoming payload: '$PAYLOAD'\"
+      fi
       
       # Extract approved and comments fields from the payload in JSON format
       APPROVAL_STATUS=$(echo \"$PAYLOAD\" | /usr/bin/jq -r '.status')
@@ -95,8 +101,15 @@ handlers:
       # To avoid issue 'argument list too long' use file
       echo \"$PAYLOAD\" > /tmp/content.json
       
+      # If debugging, turn on verbose flag for curl otherwise run in silent mode by default
+      if [ "x$DEBUG" == "xtrue" ]; 
+        CURL_OPS="-v"
+      then
+        CURL_OPS="-s"
+      fi
+      
       # Make Platform API call to change workflow manual approval status
-      response=$(curl -s --fail-with-body  -X POST \"$URL/v1/workflows/approval/status\" -H \"Authorization: Bearer $API_TOKEN\" -H 'Content-Type: application/json' --data-binary \"@/tmp/content.json\") || command_failed=1
+      response=$(curl $CURL_OPS --fail-with-body  -X POST \"$URL/v1/workflows/approval/status\" -H \"Authorization: Bearer $API_TOKEN\" -H 'Content-Type: application/json' --data-binary \"@/tmp/content.json\") || command_failed=1
       
       # Check curl exit code
       if [ ${command_failed:-0} -eq 1 ];
@@ -141,6 +154,7 @@ handlers:
       API_TOKEN: ${{ cloudbees.api.token }}
       URL: ${{ cloudbees.api.url }}
       PAYLOAD: ${{ handler.payload }}
+      DEBUG: ${{ inputs.debug }}
 
   cancel:
     uses: docker://alpine/curl:latest
