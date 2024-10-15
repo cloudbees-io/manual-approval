@@ -161,6 +161,10 @@ handlers:
     #to abort pending approval request in case of timeout or workflow abort event.
     args: |
       -c "
+      if [ "x$DEBUG" == "xtrue" ]; 
+      then
+        echo \"DEBUG: Inside cancel handler\"
+      fi
       # Make Platform API call to change workflow manual approval status
       response=$(curl -s --fail-with-body  -X POST \"$URL/v1/workflows/approval/status\" -H \"Authorization: Bearer $API_TOKEN\" -H 'Content-Type: application/json' -d '{\"status\": \"$CANCELLATION_REASON\"}') || command_failed=1
       
@@ -174,3 +178,4 @@ handlers:
       API_TOKEN: ${{ cloudbees.api.token }}
       URL: ${{ cloudbees.api.url }}
       CANCELLATION_REASON: ${{ handler.reason }}
+      DEBUG: ${{ inputs.debug }}
