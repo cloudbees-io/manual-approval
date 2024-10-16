@@ -49,7 +49,7 @@ handlers:
       # Check curl exit code
       if [ ${command_failed:-0} -eq 1 ];
       then
-        echo \"Platform API call failed with error: '$response'\"
+        echo \"ERROR: `date` - API call failed with error: '$response'\"
         
         # Save failure
         echo '{    
@@ -73,7 +73,6 @@ handlers:
         echo 'Instructions:'
         echo $INSTRUCTION
       fi
-      echo 'Thanks!'
       
       echo '{    
         \"status\": \"PENDING_APPROVAL\",
@@ -118,7 +117,7 @@ handlers:
       # Check curl exit code
       if [ ${command_failed:-0} -eq 1 ];
       then
-        echo \"Platform API call failed with error: '$response'\"
+        echo \"ERROR: `date` - API call failed with error: '$response'\"
 
         # Save failure
         echo '{    
@@ -139,7 +138,7 @@ handlers:
         JOB_STATUS="REJECTED"
         echo 'Rejection comments:'
       else
-        echo \"Error: Unexpected approval status '$APPROVAL_STATUS'\"
+        echo \"ERROR: `date` - Unexpected approval status '$APPROVAL_STATUS'\"
         echo '{    
           \"status\": \"FAILED\",
           \"message\": \"Unexpected approval status encountered: '$APPROVAL_STATUS'\"
@@ -181,7 +180,7 @@ handlers:
       # Check curl exit code
       if [ ${command_failed:-0} -eq 1 ];
       then
-        echo \"Platform API call failed with error: '$response'\"
+        echo \"ERROR: `date` - API call failed with error: '$response'\"
       fi
       if [ "x$DEBUG" == "xtrue" ]; 
       then
