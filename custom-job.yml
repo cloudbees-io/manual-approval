@@ -26,7 +26,7 @@ handlers:
       -c """
       if [ "x$DEBUG" == "xtrue" ]; 
       then
-        echo \"DEBUG: Inside init handler\"
+        echo \"DEBUG: `date` - Inside init handler\"
       fi
       # Manual approval template
       TEMPLATE='{\"approvers\": ($a | split(\",\")), \"disallowLaunchByUser\": $d}'
@@ -82,7 +82,7 @@ handlers:
       
       if [ "x$DEBUG" == "xtrue" ]; 
       then
-        echo \"DEBUG: Done init handler\"
+        echo \"DEBUG: `date` - Done init handler\"
       fi
       """
     env:
@@ -101,8 +101,8 @@ handlers:
       
       if [ "x$DEBUG" == "xtrue" ]; 
       then
-        echo \"DEBUG: Inside callback handler\"
-        echo \"DEBUG: Incoming payload: '$PAYLOAD'\"
+        echo \"DEBUG: `date` - Inside callback handler\"
+        echo \"DEBUG: `date` - Incoming payload: '$PAYLOAD'\"
       fi
       
       # Extract approved and comments fields from the payload in JSON format
@@ -156,7 +156,7 @@ handlers:
       
       if [ "x$DEBUG" == "xtrue" ]; 
       then
-        echo \"DEBUG: Done callback handler\"
+        echo \"DEBUG: `date` - Done callback handler\"
       fi
       """
     env:
@@ -173,7 +173,7 @@ handlers:
       -c "
       if [ "x$DEBUG" == "xtrue" ]; 
       then
-        echo \"DEBUG: Inside cancel handler\"
+        echo \"DEBUG: `date` - Inside cancel handler\"
       fi
       # Make Platform API call to change workflow manual approval status
       response=$(curl -s --fail-with-body  -X POST \"$URL/v1/workflows/approval/status\" -H \"Authorization: Bearer $API_TOKEN\" -H 'Content-Type: application/json' -d '{\"status\": \"$CANCELLATION_REASON\"}') || command_failed=1
@@ -185,7 +185,7 @@ handlers:
       fi
       if [ "x$DEBUG" == "xtrue" ]; 
       then
-        echo \"DEBUG: Done cancel handler\"
+        echo \"DEBUG: `date` - Done cancel handler\"
       fi
       "
     env:
