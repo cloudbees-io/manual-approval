@@ -79,6 +79,11 @@ handlers:
         \"status\": \"PENDING_APPROVAL\",
         \"message\": \"Waiting for approval from approvers\" 
       }' > $CLOUDBEES_STATUS
+      
+      if [ "x$DEBUG" == "xtrue" ]; 
+      then
+        echo \"DEBUG: Done init handler\"
+      fi
       """
     env:
       APPROVERS: ${{inputs.approvers}}
@@ -148,6 +153,11 @@ handlers:
         \"status\": '\\\"$JOB_STATUS\\\"',
         \"message\": \"Successfully changed workflow manual approval status\"
       }' > $CLOUDBEES_STATUS
+      
+      if [ "x$DEBUG" == "xtrue" ]; 
+      then
+        echo \"DEBUG: Done callback handler\"
+      fi
       """
     env:
       API_TOKEN: ${{ cloudbees.api.token }}
@@ -172,6 +182,10 @@ handlers:
       if [ ${command_failed:-0} -eq 1 ];
       then
         echo \"Platform API call failed with error: '$response'\"
+      fi
+      if [ "x$DEBUG" == "xtrue" ]; 
+      then
+        echo \"DEBUG: Done cancel handler\"
       fi
       "
     env:
