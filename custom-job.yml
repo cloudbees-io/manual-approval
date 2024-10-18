@@ -20,10 +20,15 @@ inputs:
 
 handlers:
   init:
-    uses: docker://esolang/jq:latest
+    uses: docker://alpine/curl:latest
     command: /bin/sh
     args: |
       -c """
+      date
+      apk add --no-cache jq
+      date
+      jq --version
+      
       if [ "x$DEBUG" == "xtrue" ]; 
       then
         echo \"DEBUG: `date` - Inside init handler\"
