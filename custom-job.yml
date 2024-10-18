@@ -75,7 +75,7 @@ handlers:
 
         if [ "x$DEBUG" == "xtrue" ]; 
         then
-          echo \"DEBUG: `date` - userNames is $userNames\"
+          echo \"DEBUG: `date` - approval user names list is $userNames\"
         fi
         
         echo 'Waiting for approval from one of the following: '$userNames
