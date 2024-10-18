@@ -71,7 +71,7 @@ handlers:
         fi
       
         # Parse notified approver user names from the response
-        userNames=$(echo $response | /usr/bin/jq -nr '.approvers | map(.userName) | join(\", \")')
+        userNames=$(echo $response | /usr/bin/jq -r '.approvers | map(.userName) | join(\", \")')
 
         if [ "x$DEBUG" == "xtrue" ]; 
         then
