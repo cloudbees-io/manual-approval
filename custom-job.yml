@@ -67,7 +67,7 @@ handlers:
       else
         if [ "x$DEBUG" == "xtrue" ]; 
         then
-          echo \"DEBUG: `date` - response is $response\"
+          echo \"DEBUG: `date` - manual approval successfully created with response is $response\"
         fi
       
         # Parse notified approver user names from the response
