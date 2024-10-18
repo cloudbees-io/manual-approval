@@ -61,11 +61,13 @@ handlers:
       fi
 
       # Save success
-      if [ -z "$APPROVERS" ]; 
+      if [ -z \"$APPROVERS\" ] || [ -z \"$response\" ]; 
       then
         echo 'Waiting for approval'
       else
-        echo 'Waiting for approval from one of the following: '$APPROVERS
+        # Parse notified approver user names from the response
+        userNames=$(echo $test_approvers | /usr/bin/jq -r '.approvers | map(.userName) | join(\", \")')
+        echo 'Waiting for approval from one of the following: '$userNames
       fi
 
       if [ -n \"$INSTRUCTION\" ]; 
