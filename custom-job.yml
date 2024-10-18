@@ -65,8 +65,19 @@ handlers:
       then
         echo 'Waiting for approval'
       else
+        if [ "x$DEBUG" == "xtrue" ]; 
+        then
+          echo \"DEBUG: `date` - response is $response\"
+        fi
+      
         # Parse notified approver user names from the response
-        userNames=$(echo $test_approvers | /usr/bin/jq -r '.approvers | map(.userName) | join(\", \")')
+        userNames=$(echo $response | /usr/bin/jq -r '.approvers | map(.userName) | join(\", \")')
+
+        if [ "x$DEBUG" == "xtrue" ]; 
+        then
+          echo \"DEBUG: `date` - userNames is $userNames\"
+        fi
+        
         echo 'Waiting for approval from one of the following: '$userNames
       fi
 
