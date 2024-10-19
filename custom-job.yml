@@ -42,7 +42,7 @@ handlers:
       echo \"$JSON_PAYLOAD\" > /tmp/content.json
 
       # Make Platform API call
-      response=$(wget --no-verbose --server-response  -O - --timeout=60 --tries=1  --content-on-error --header=\"Authorization: Bearer ${API_TOKEN}\" --header=\"Content-Type: application/json\" --header=\"Accept: application/json\" --post-file=\"/tmp/content.json\" \"$URL/v1/workflows/approval\") || command_failed=1
+      response=$(wget -q -S -O - -T 60 --header \"Authorization: Bearer ${API_TOKEN}\" --header \"Content-Type: application/json\" --header \"Accept: application/json\" --post-file \"/tmp/content.json\" \"$URL/v1/workflows/approval\") || command_failed=1
 
       # Check exit code
       if [ ${command_failed:-0} -eq 1 ];
@@ -123,7 +123,7 @@ handlers:
       echo \"$PAYLOAD\" > /tmp/content.json
       
       # Make Platform API call to change workflow manual approval status
-      response=$(wget --no-verbose --server-response  -O - --timeout=60 --tries=1  --content-on-error  --header=\"Authorization: Bearer ${API_TOKEN}\" --header=\"Content-Type: application/json\" --header=\"Accept: application/json\" --post-file=\"/tmp/content.json\" \"$URL/v1/workflows/approval/status\") || command_failed=1
+      response=$(wget -q -S -O - -T 60 --header \"Authorization: Bearer ${API_TOKEN}\" --header \"Content-Type: application/json\" --header \"Accept: application/json\" --post-file \"/tmp/content.json\" \"$URL/v1/workflows/approval/status\") || command_failed=1
       
       # Check exit code
       if [ ${command_failed:-0} -eq 1 ];
