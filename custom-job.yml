@@ -120,8 +120,6 @@ handlers:
       # Extract approved and comments fields from the payload in JSON format
       APPROVAL_STATUS=$(echo \"$PAYLOAD\" | /usr/bin/jq -r '.status')
       COMMENTS=$(echo \"$PAYLOAD\" | /usr/bin/jq -r '.comments')
-      RESPONDED_ON=$(echo \"$PAYLOAD\" | /usr/bin/jq -r '.respondedOn')
-      APPROVER_USER_NAME=$(echo \"$PAYLOAD\" | /usr/bin/jq -r '.userName')
 
       # To avoid issue 'argument list too long' use file
       echo \"$PAYLOAD\" > /tmp/content.json
@@ -147,11 +145,11 @@ handlers:
       if [ "$APPROVAL_STATUS" == "UPDATE_MANUAL_APPROVAL_STATUS_APPROVED" ]; 
       then
         JOB_STATUS="APPROVED"
-        echo \"Approved by $APPROVER_USER_NAME on $RESPONDED_ON with comments:\"
+        echo 'Approval comments:'
       elif [ "$APPROVAL_STATUS" == "UPDATE_MANUAL_APPROVAL_STATUS_REJECTED" ];
       then
         JOB_STATUS="REJECTED"
-        echo \"Rejected by $APPROVER_USER_NAME on $RESPONDED_ON with comments:\"
+        echo 'Rejection comments:'
       else
         echo \"ERROR: `date` - Unexpected approval status '$APPROVAL_STATUS'\"
         echo '{    
