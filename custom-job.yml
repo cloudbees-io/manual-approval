@@ -127,6 +127,7 @@ handlers:
 
       date
       apk add --no-cache jq
+      apk add --no-cache wget
       date
       jq --version
       
@@ -144,7 +145,13 @@ handlers:
       echo \"$PAYLOAD\" > /tmp/content.json
       
       # Make Platform API call to change workflow manual approval status
-      response=$(curl -s --max-time 150 -w \"Exit code: %{exitcode} HTTP status: %{response_code} Error: %{errormsg}\" --fail-with-body  -X POST \"$URL/v1/workflows/approval/status\" -H \"Authorization: Bearer $API_TOKEN\" -H 'Content-Type: application/json' --data-binary \"@/tmp/content.json\") || command_failed=1
+      # response=$(curl -s --max-time 150 -w \"Exit code: %{exitcode} HTTP status: %{response_code} Error: %{errormsg}\" --fail-with-body  -X POST \"$URL/v1/workflows/approval/status\" -H \"Authorization: Bearer $API_TOKEN\" -H 'Content-Type: application/json' --data-binary \"@/tmp/content.json\") || command_failed=1
+
+      response=$(wget --content-on-error --header=\"Authorization: Bearer ${API_TOKEN}\" \
+       --header=\"Content-Type: application/json\" \
+       --header=\"Accept: application/json\" \
+       --post-file=/tmp/content.json \
+       \"$URL/v1/workflows/approval/status\") || command_failed=1
       
       # Check curl exit code
       if [ ${command_failed:-0} -eq 1 ];
@@ -202,12 +209,19 @@ handlers:
     #to abort pending approval request in case of timeout or workflow abort event.
     args: |
       -c "
+      apk add --no-cache wget
       if [ "x$DEBUG" == "xtrue" ]; 
       then
         echo \"DEBUG: `date` - Inside cancel handler\"
       fi
       # Make Platform API call to change workflow manual approval status
-      response=$(curl -s --max-time 150 -w \"Exit code: %{exitcode} HTTP status: %{response_code} Error: %{errormsg}\" --fail-with-body  -X POST \"$URL/v1/workflows/approval/status\" -H \"Authorization: Bearer $API_TOKEN\" -H 'Content-Type: application/json' -d '{\"status\": \"$CANCELLATION_REASON\"}') || command_failed=1
+      # response=$(curl -s --max-time 150 -w \"Exit code: %{exitcode} HTTP status: %{response_code} Error: %{errormsg}\" --fail-with-body  -X POST \"$URL/v1/workflows/approval/status\" -H \"Authorization: Bearer $API_TOKEN\" -H 'Content-Type: application/json' -d '{\"status\": \"$CANCELLATION_REASON\"}') || command_failed=1
+      
+      response=$(wget --content-on-error --header=\"Authorization: Bearer ${API_TOKEN}\" \
+       --header="Content-Type: application/json" \
+       --header="Accept: application/json" \
+       --post-data='{\"status\": \"$CANCELLATION_REASON\"}') \
+       "$URL/v1/workflows/approval/status") || command_failed=1
       
       # Check curl exit code
       if [ ${command_failed:-0} -eq 1 ];
