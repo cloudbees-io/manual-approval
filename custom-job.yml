@@ -20,7 +20,7 @@ inputs:
 
 handlers:
   init:
-    uses: docker://esolang/jq:latest
+    uses: docker://badouralix/curl-jq:latest
     command: /bin/sh
     args: |
       -c """
@@ -106,7 +106,7 @@ handlers:
       DEBUG: ${{ inputs.debug }}
 
   callback:
-    uses: docker://esolang/jq:latest
+    uses: docker://badouralix/curl-jq:latest
     command: /bin/sh
     args: |
       -c """
