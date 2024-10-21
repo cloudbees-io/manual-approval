@@ -50,8 +50,10 @@ handlers:
       # response=$(curl -s --max-time 150 -w \"Exit code: %{exitcode} HTTP status: %{response_code} Error: %{errormsg}\" --fail-with-body -X 'POST' \"$URL/v1/workflows/approval\" \
       #   -H \"Authorization: Bearer ${API_TOKEN}\" -H 'Content-Type: application/json' -H 'Accept: application/json' \
       #   --data-binary \"@/tmp/content.json\") || command_failed=1
+
+      wget --version
       
-      response=$(wget --content-on-error --header=\"Authorization: Bearer ${API_TOKEN}\" \
+      response=$(wget --header=\"Authorization: Bearer ${API_TOKEN}\" \
        --header=\"Content-Type: application/json\" \
        --header=\"Accept: application/json\" \
        --post-file=\"@/tmp/content.json\" \
