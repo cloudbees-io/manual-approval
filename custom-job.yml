@@ -26,6 +26,7 @@ handlers:
       -c """
       date
       apk add --no-cache jq
+      apk add --no-cache wget
       date
       jq --version
       
@@ -53,7 +54,7 @@ handlers:
 
       wget --version
       
-      response=$(wget --header=\"Authorization: Bearer ${API_TOKEN}\" \
+      response=$(wget --content-on-error --header=\"Authorization: Bearer ${API_TOKEN}\" \
        --header=\"Content-Type: application/json\" \
        --header=\"Accept: application/json\" \
        --post-file=\"@/tmp/content.json\" \
