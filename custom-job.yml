@@ -33,7 +33,7 @@ handlers:
         # curl --fail-with-body -X 'POST' \"$URL/v1/workflows/artifact\" -H \"Authorization: Bearer ${API_TOKEN}\" -H 'Content-Type: application/json' -H 'Accept: application/json' \
         #   --data-binary '{\"stepId\": \"$STEP_ID\", \"evidence\": {\"value\": \"debugging the issue\", \"format\": \"FORMAT_UNSPECIFIED\"}}'
       
-        curl -v -s --max-time 150 -w \"Exit code: %{exitcode} HTTP status: %{response_code} Error: %{errormsg}\" --fail-with-body -X 'GET' \"$URL/v1/permissions\" \
+        curl -v -s --max-time 150 -w \"Exit code: %{exitcode} HTTP status: %{response_code} Error: %{errormsg}\" --fail-with-body -X 'GET' \"$URL/v2/resources/f49d713a-e61f-4cfc-9339-027e2005e25d/errors?children=false\" \
         -H \"Authorization: Bearer ${API_TOKEN}\" -H 'Content-Type: application/json' -H 'Accept: application/json'
       
       """
