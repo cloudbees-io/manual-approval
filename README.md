@@ -1,7 +1,7 @@
 # manual-approval
 Request manual approval from users and teams
 
-Use this job to requests workflow execution approval. 
+Use this job to request workflow execution approval. 
 
 Refer to the link:https://docs.cloudbees.com/docs/cloudbees-platform/latest/workflows/manage-workflows[Manage workflows] for more information.
 
