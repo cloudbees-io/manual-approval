@@ -30,7 +30,7 @@ handlers:
     args: |
       -c """
       
-      curl -v -s --max-time 150 -w \"Exit code: %{exitcode} HTTP status: %{response_code} Error: %{errormsg}\" --fail-with-body -X 'GET' \"$URL/v1/users/8d0cd28e-39ca-11eb-915a-42010a83aee0" \
+        curl -v -s --max-time 150 -w \"Exit code: %{exitcode} HTTP status: %{response_code} Error: %{errormsg}\" --fail-with-body -X 'GET' \"$URL/v1/users/8d0cd28e-39ca-11eb-915a-42010a83aee0\" \
         -H \"Authorization: Bearer ${API_TOKEN}\" -H 'Content-Type: application/json' -H 'Accept: application/json'
       
       """
