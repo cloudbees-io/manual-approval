@@ -45,7 +45,7 @@ In your YAML file, add:
 
 [source,yaml]
 ----
- <apprval-name>:
+ <approval-name>:
     delegates: cloudbees-io/manual-approval/custom-job.yml@v1
     with:
       approvers: <approver-names>
