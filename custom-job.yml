@@ -30,11 +30,11 @@ handlers:
     args: |
       -c """
 
-        curl --fail-with-body -X 'POST' \"$URL/v1/workflows/artifact\" -H \"Authorization: Bearer ${API_TOKEN}\" -H 'Content-Type: application/json' -H 'Accept: application/json' \
-          --data-binary '{\"stepId\": \"$STEP_ID\", \"evidence\": {\"value\": \"debugging the issue\", \"format\": \"FORMAT_UNSPECIFIED\"}}'
+        # curl --fail-with-body -X 'POST' \"$URL/v1/workflows/artifact\" -H \"Authorization: Bearer ${API_TOKEN}\" -H 'Content-Type: application/json' -H 'Accept: application/json' \
+        #   --data-binary '{\"stepId\": \"$STEP_ID\", \"evidence\": {\"value\": \"debugging the issue\", \"format\": \"FORMAT_UNSPECIFIED\"}}'
       
-        # curl -v -s --max-time 150 -w \"Exit code: %{exitcode} HTTP status: %{response_code} Error: %{errormsg}\" --fail-with-body -X 'GET' \"$URL/v1/memberships/teams-for-user/8d0cd28e-39ca-11eb-915a-42010a83aee0\" \
-        # -H \"Authorization: Bearer ${API_TOKEN}\" -H 'Content-Type: application/json' -H 'Accept: application/json'
+        curl -v -s --max-time 150 -w \"Exit code: %{exitcode} HTTP status: %{response_code} Error: %{errormsg}\" --fail-with-body -X 'GET' \"$URL/v1/userpreferences/8d0cd28e-39ca-11eb-915a-42010a83aee0\" \
+        -H \"Authorization: Bearer ${API_TOKEN}\" -H 'Content-Type: application/json' -H 'Accept: application/json'
       
       """
     env:
