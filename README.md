@@ -1,7 +1,7 @@
 # manual-approval
 Request manual approval from users and teams
 
-Use this job  
+Use this job to requests workflow execution approval. 
 
 Refer to the link:https://docs.cloudbees.com/docs/cloudbees-platform/latest/workflows/runs#_workflow_run_evidence[run evidence documentation] for more information.
 
@@ -16,25 +16,26 @@ Refer to the link:https://docs.cloudbees.com/docs/cloudbees-platform/latest/work
 | Required?
 | Description
 
-| `delegates`
-|String
-| Yes
-| 
-
 | `approvers`
 | String
 |No
-| 
+| List of user IDs that are to be notified for approval. If left blank, all eligible users will be notified.
+
+| `delegates`
+|String
+| Yes
+| Path to this repository: cloudbees-io/manual-approval/custom-job.yml@v1
+
 
 | `disallowLaunchByUser`
 |String
 | Yes
-| 
+| If true, the the user that started the workflow is not allowed to perform the approval.
 
 | `instruction`
 |String
 | Yes
-| 
+| Text that will be shown in the runtime approval dialog, log and evidence views.
 
 |===
 
@@ -44,13 +45,12 @@ In your YAML file, add:
 
 [source,yaml]
 ----
-      - name: Publish workflow evidence item
-        uses: cloudbees-io/publish-evidence-item@v1
-        with:
-          content: |
-            ## Test markup and property rendering
-            - Run ID: ${{ cloudbees.run_id }}
-            - [backend.tar](https://ourcompany.com/repo/backend.tar)       
+ <apprval-name>:
+    delegates: cloudbees-io/manual-approval/custom-job.yml@v1
+    with:
+      approvers: <approver-names>
+      disallowLaunchByUser: false
+      instruction: <Approval instructions>  
 ----
 
 NOTE: For more information 
