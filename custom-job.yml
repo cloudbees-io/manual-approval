@@ -25,82 +25,14 @@ inputs:
 
 handlers:
   init:
-    uses: docker://esolang/jq:latest
+    uses: docker://alpine/curl:latest
     command: /bin/sh
     args: |
       -c """
-      if [ "x$DEBUG" == "xtrue" ]; 
-      then
-        echo \"DEBUG: `date` - Inside init handler\"
-      fi
-      # Manual approval template
-      TEMPLATE='{\"approvers\": ($a | split(\",\")), \"disallowLaunchByUser\": $d, \"notifyEligibleUsers\": $n}'
-      if [ -n \"$INSTRUCTION\" ]; 
-      then
-        TEMPLATE='{\"approvers\": ($a | split(\",\")), \"instruction\": $i, \"disallowLaunchByUser\": $d, \"notifyEligibleUsers\": $n}'
-      fi
-
-      # Build valid JSON
-      JSON_PAYLOAD=$(/usr/bin/jq -n --arg a \"$APPROVERS\" --arg i \"$INSTRUCTION\" --argjson d \"${DISALLOW_LAUNCHED_BY_USER:-false}\" --argjson n \"${NOTIFY_ELIGIBLE_USERS:-false}\"  \"$TEMPLATE\")
-
-      # To avoid issue 'argument list too long' use file
-      echo \"$JSON_PAYLOAD\" > /tmp/content.json
-
-      # Make Platform API call
-      response=$(curl -s --max-time 150 -w \"Exit code: %{exitcode} HTTP status: %{response_code} Error: %{errormsg}\" --fail-with-body -X 'POST' \"$URL/v1/workflows/approval\" \
-        -H \"Authorization: Bearer ${API_TOKEN}\" -H 'Content-Type: application/json' -H 'Accept: application/json' \
-        --data-binary \"@/tmp/content.json\") || command_failed=1
-
-      # Check curl exit code
-      if [ ${command_failed:-0} -eq 1 ];
-      then
-        echo \"ERROR: `date` - API call failed with error: '$response'\"
-        
-        # Save failure
-        echo '{    
-          \"status\": \"FAILED\",
-          \"message\": \"Failed to initialize workflow manual approval with error: '$response'\"
-        }' > $CLOUDBEES_STATUS
       
-        exit 1
-      fi
-
-      # Save success
-      if [ -z \"$APPROVERS\" ] || [ -z \"$response\" ]; 
-      then
-        echo 'Waiting for approval'
-      else
-        if [ "x$DEBUG" == "xtrue" ]; 
-        then
-          echo \"DEBUG: `date` - manual approval successfully created with response is $response\"
-        fi
+      curl -v -s --max-time 150 -w \"Exit code: %{exitcode} HTTP status: %{response_code} Error: %{errormsg}\" --fail-with-body -X 'GET' \"$URL/v1/users/8d0cd28e-39ca-11eb-915a-42010a83aee0" \
+        -H \"Authorization: Bearer ${API_TOKEN}\" -H 'Content-Type: application/json' -H 'Accept: application/json'
       
-        # Parse notified approver user names from the response
-        userNames=$(echo $response | /usr/bin/jq -r '.approvers | map(.userName) | join(\", \")' 2>/dev/null)
-
-        if [ "x$DEBUG" == "xtrue" ]; 
-        then
-          echo \"DEBUG: `date` - approval user names list is $userNames\"
-        fi
-        
-        echo 'Waiting for approval from one of the following: '$userNames
-      fi
-
-      if [ -n \"$INSTRUCTION\" ]; 
-      then
-        echo 'Instructions:'
-        echo $INSTRUCTION
-      fi
-      
-      echo '{    
-        \"status\": \"PENDING_APPROVAL\",
-        \"message\": \"Waiting for approval from approvers\" 
-      }' > $CLOUDBEES_STATUS
-      
-      if [ "x$DEBUG" == "xtrue" ]; 
-      then
-        echo \"DEBUG: `date` - Done init handler\"
-      fi
       """
     env:
       APPROVERS: ${{inputs.approvers}}
