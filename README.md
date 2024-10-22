@@ -3,7 +3,8 @@ Request manual approval from users and teams
 
 Use this job to requests workflow execution approval. 
 
-Refer to the link:https://docs.cloudbees.com/docs/cloudbees-platform/latest/workflows/runs#_workflow_run_evidence[run evidence documentation] for more information.
+Refer to the link:https://docs.cloudbees.com/docs/cloudbees-platform/latest/workflows/manage-workflows[Manage workflows] for more information.
+
 
 == Inputs
 
