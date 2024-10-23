@@ -46,15 +46,8 @@ handlers:
       # To avoid issue 'argument list too long' use file
       echo $JSON_PAYLOAD
       echo \"$JSON_PAYLOAD\" > /tmp/content.json
-      JSON_FILE = "/tmp/content.json"
-
-      echo "cat:"
-      cat $JSON_FILE
-      echo "yq:"
-      yq eval -P data.json
-      echo "jq:"
-      jq -r 'to_entries | map("\(.key): \(.value | @sh)") | .[]' "$JSON_FILE"
       
+      jq -C '.' /tmp/content.json
 
 
       # Make Platform API call
