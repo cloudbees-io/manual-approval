@@ -47,13 +47,15 @@ handlers:
       echo $JSON_PAYLOAD
       echo \"$JSON_PAYLOAD\" > /tmp/content.json
       JSON_FILE = "/tmp/content.json"
+
+      echo "cat:"
+      cat $JSON_FILE
+      echo "yq:"
+      yq eval -P data.json
+      echo "jq:"
+      jq -r 'to_entries | map("\(.key): \(.value | @sh)") | .[]' "$JSON_FILE"
       
-      if [ -f "$JSON_FILE" ]; then
-        # Convert JSON to YAML and print
-        cat "$JSON_FILE" | yq eval -P -
-      else    
-        echo "File not found: $JSON_FILE"
-      fi
+
 
       # Make Platform API call
       response=$(curl -s --max-time 150 -w \"Exit code: %{exitcode} HTTP status: %{response_code} Error: %{errormsg}\" --fail-with-body -X 'POST' \"$URL/v1/workflows/approval\" \
