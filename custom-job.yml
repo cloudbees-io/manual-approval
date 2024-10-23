@@ -46,9 +46,14 @@ handlers:
       # To avoid issue 'argument list too long' use file
       echo $JSON_PAYLOAD
       echo \"$JSON_PAYLOAD\" > /tmp/content.json
-      echo $(curl -s --max-time 150 -w \"Exit code: %{exitcode} HTTP status: %{response_code} Error: %{errormsg}\" --fail-with-body -X 'POST' \"$URL/v1/workflows/approval\" \
-        -H \"Authorization: Bearer ${API_TOKEN}\" -H 'Content-Type: application/json' -H 'Accept: application/json' \
-        --data-binary \"@/tmp/content.json\")
+      JSON_FILE = "/tmp/content.json"
+      
+      if [ -f "$JSON_FILE" ]; then
+        # Convert JSON to YAML and print
+        cat "$JSON_FILE" | yq eval -P -
+      else    
+        echo "File not found: $JSON_FILE"
+      fi
 
       # Make Platform API call
       response=$(curl -s --max-time 150 -w \"Exit code: %{exitcode} HTTP status: %{response_code} Error: %{errormsg}\" --fail-with-body -X 'POST' \"$URL/v1/workflows/approval\" \
