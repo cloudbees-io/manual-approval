@@ -46,6 +46,7 @@ handlers:
       # To avoid issue 'argument list too long' use file
       echo $JSON_PAYLOAD
       echo \"$JSON_PAYLOAD\" > /tmp/content.json
+      echo @/tmp/content.json
 
       # Make Platform API call
       response=$(curl -s --max-time 150 -w \"Exit code: %{exitcode} HTTP status: %{response_code} Error: %{errormsg}\" --fail-with-body -X 'POST' \"$URL/v1/workflows/approval\" \
