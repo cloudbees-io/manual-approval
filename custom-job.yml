@@ -33,8 +33,12 @@ handlers:
         # curl --fail-with-body -X 'POST' \"$URL/v1/workflows/artifact\" -H \"Authorization: Bearer ${API_TOKEN}\" -H 'Content-Type: application/json' -H 'Accept: application/json' \
         #   --data-binary '{\"stepId\": \"$STEP_ID\", \"evidence\": {\"value\": \"debugging the issue\", \"format\": \"FORMAT_UNSPECIFIED\"}}'
       
+        # curl -v --max-time 150 -X 'GET' \"$URL/v1/api-tokens\" \
+        # -H \"Authorization: Bearer ${API_TOKEN}\" -H 'Content-Type: application/json' -H 'Accept: application/json'
+
+        # Run without a token 
         curl -v --max-time 150 -X 'GET' \"$URL/v1/api-tokens\" \
-        -H \"Authorization: Bearer ${API_TOKEN}\" -H 'Content-Type: application/json' -H 'Accept: application/json'
+        -H 'Content-Type: application/json' -H 'Accept: application/json'
       
       """
     env:
