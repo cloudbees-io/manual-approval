@@ -196,10 +196,12 @@ handlers:
       # set the appropriate status on the manual approval request depending on the cancellation reason
       if [ "x$CANCELLATION_REASON" == "xCANCELLED" ]; 
       then
-        echo \"Workflow stopped. Aborting the manual approval request\"
+        echo \"Workflow stopped\"
+        echo \"Cancelling the manual approval request\"
         APPROVAL_STATUS="UPDATE_MANUAL_APPROVAL_STATUS_ABORTED"
       else
-        echo \"Workflow timed out. Updating the manual approval request as timed out\"
+        echo \"Workflow timed out\"
+        echo \"Cancelling the manual approval request\"
         APPROVAL_STATUS="UPDATE_MANUAL_APPROVAL_STATUS_TIMED_OUT"
       fi
       
