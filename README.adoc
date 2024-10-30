@@ -35,7 +35,8 @@ Refer to the link:https://docs.cloudbees.com/docs/cloudbees-platform/latest/work
 | `notifyAllEligibleUsers`
 |String
 | No
-| Use to specify who will receive notification to participate in workflow approval process by selecting *Notify all eligible users*. Notifications will be sent as follows:
+| Use to notify all users who have the execute approval permission on the workflow when no approvers  are listed 
+ by selecting *Notify all eligible users*.     Notifications will be sent as follows:
 
 ** If users are listed in *Approvers* and *Notify all eligible users* is true or false, then
 *** Only listed approvers will receive notification.
