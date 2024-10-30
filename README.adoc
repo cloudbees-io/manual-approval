@@ -58,7 +58,7 @@ Refer to the link:https://docs.cloudbees.com/docs/cloudbees-platform/latest/work
 | Text that will display as part of:
 
 *The approval email notification.
-* Run details locations.
+* Run details.
 ** during approval
 ** after approval
 
