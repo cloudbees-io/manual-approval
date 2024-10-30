@@ -20,7 +20,7 @@ Refer to the link:https://docs.cloudbees.com/docs/cloudbees-platform/latest/work
 | `approvers`
 | String
 |No
-| List of users who participation in the workflow approval process is requested.  If left blank, all eligible users will be notified.
+| List of users whose participation in the workflow approval process is requested.  If left blank, all eligible users will be notified.
 
 | `delegates`
 |String
@@ -56,7 +56,7 @@ Refer to the link:https://docs.cloudbees.com/docs/cloudbees-platform/latest/work
 | Yes
 | Text that will display as part of:
 
-* Email location
+*The approval email notification.
 * Run details locations.
 ** during approval
 ** after approval
