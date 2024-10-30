@@ -69,13 +69,15 @@ In your YAML file, add:
 
 [source,yaml]
 ----
- <approval-name>:
+ workflow-approval-name:
+    timeout-minutes: 4320
     delegates: cloudbees-io/manual-approval/custom-job.yml@v1
     with:
-      approvers: <approver-names>
+      approvers:
       disallowLaunchByUser: false
       notifyAllEligibleUsers: false
-      instructions: <Approval instructions>  
+      instructions: "Enter instructive text for approvers here. "
+
 ----
 
 NOTE: For more information 
