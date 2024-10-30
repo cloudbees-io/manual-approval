@@ -32,15 +32,6 @@ handlers:
       if [ "x$DEBUG" == "xtrue" ]; 
       then
         echo \"DEBUG: `date` - Inside init handler\"
-        #TODO TEMP
-        APPROVAL_STATUS="UPDATE_MANUAL_APPROVAL_STATUS_ABORTED"
-        echo '{\"status\": '\\\"$APPROVAL_STATUS\\\"'}' > /tmp/content.json
-        if [ "x$DEBUG" == "xtrue" ];
-        then
-          echo \"Cancel request payload:\"
-          cat /tmp/content.json
-        fi
-        #TEMP END
       fi
       # Manual approval template
       TEMPLATE='{\"approvers\": ($a | split(\",\")), \"disallowLaunchByUser\": $d, \"notifyEligibleUsers\": $n}'
@@ -221,7 +212,7 @@ handlers:
         echo \"Request payload:\"
         cat /tmp/content.json
       fi
-      response=$(curl --trace-ascii - -s --max-time 150 -w \"Exit code: %{exitcode} HTTP status: %{response_code} Error: %{errormsg}\" --fail-with-body  -X POST \"$URL/v1/workflows/approval/status\" -H \"Authorization: Bearer $API_TOKEN\" -H 'Content-Type: application/json' --data-binary \"@/tmp/content.json\") || command_failed=1
+      response=$(curl -s --max-time 150 -w \"Exit code: %{exitcode} HTTP status: %{response_code} Error: %{errormsg}\" --fail-with-body  -X POST \"$URL/v1/workflows/approval/status\" -H \"Authorization: Bearer $API_TOKEN\" -H 'Content-Type: application/json' --data-binary \"@/tmp/content.json\") || command_failed=1
       
       # Check curl exit code
       if [ ${command_failed:-0} -eq 1 ];
