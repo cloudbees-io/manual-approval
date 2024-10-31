@@ -20,7 +20,7 @@ inputs:
     required: false
   debug:
     description: Set to true to enable debug logging.
-    default: false
+    default: true
     required: false
 
 handlers:
@@ -46,11 +46,18 @@ handlers:
       # To avoid issue 'argument list too long' use file
       echo \"$JSON_PAYLOAD\" > /tmp/content.json
 
+      START=$(date +%s)
       # Make Platform API call
       response=$(curl -s --max-time 150 -w \"Exit code: %{exitcode} HTTP status: %{response_code} Error: %{errormsg}\" --fail-with-body -X 'POST' \"$URL/v1/workflows/approval\" \
         -H \"Authorization: Bearer ${API_TOKEN}\" -H 'Content-Type: application/json' -H 'Accept: application/json' \
         --data-binary \"@/tmp/content.json\") || command_failed=1
-
+      END=$(date +%s)
+      if [ "x$DEBUG" == "xtrue" ]; 
+      then
+      DURATION=$((END-START))
+        echo \"DEBUG:  API call completed in $DURATION seconds\"
+      fi
+      
       # Check curl exit code
       if [ ${command_failed:-0} -eq 1 ];
       then
@@ -128,8 +135,15 @@ handlers:
       # To avoid issue 'argument list too long' use file
       echo \"$PAYLOAD\" > /tmp/content.json
       
+      START=$(date +%s)
       # Make Platform API call to change workflow manual approval status
       response=$(curl -s --max-time 150 -w \"Exit code: %{exitcode} HTTP status: %{response_code} Error: %{errormsg}\" --fail-with-body  -X POST \"$URL/v1/workflows/approval/status\" -H \"Authorization: Bearer $API_TOKEN\" -H 'Content-Type: application/json' --data-binary \"@/tmp/content.json\") || command_failed=1
+      END=$(date +%s)
+      if [ "x$DEBUG" == "xtrue" ]; 
+      then
+      DURATION=$((END-START))
+        echo \"DEBUG:  API call completed in $DURATION seconds\"
+      fi
       
       # Check curl exit code
       if [ ${command_failed:-0} -eq 1 ];
@@ -212,7 +226,14 @@ handlers:
         echo \"Request payload:\"
         cat /tmp/content.json
       fi
+      START=$(date +%s)
       response=$(curl -s --max-time 150 -w \"Exit code: %{exitcode} HTTP status: %{response_code} Error: %{errormsg}\" --fail-with-body  -X POST \"$URL/v1/workflows/approval/status\" -H \"Authorization: Bearer $API_TOKEN\" -H 'Content-Type: application/json' --data-binary \"@/tmp/content.json\") || command_failed=1
+      END=$(date +%s)
+      if [ "x$DEBUG" == "xtrue" ]; 
+      then
+      DURATION=$((END-START))
+        echo \"DEBUG:  API call completed in $DURATION seconds\"
+      fi
       
       # Check curl exit code
       if [ ${command_failed:-0} -eq 1 ];
