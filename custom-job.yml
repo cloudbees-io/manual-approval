@@ -210,9 +210,7 @@ handlers:
       printf '{\n  "status": "%s"\n}\n' "$APPROVAL_STATUS" > /tmp/content.json
       cat /tmp/content.json
       
-      echo '{    
-        \"status\": '\\\"$APPROVAL_STATUS\\\"'
-      }'
+      echo '{\"status\": '\\\"$APPROVAL_STATUS\\\"'}'
       
       # Make Platform API call to change workflow manual approval status
    #    echo '{    
