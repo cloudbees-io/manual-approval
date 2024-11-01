@@ -199,10 +199,12 @@ handlers:
         echo \"Workflow aborted by user\"
         echo \"Cancelling the manual approval request\"
         APPROVAL_STATUS="UPDATE_MANUAL_APPROVAL_STATUS_ABORTED"
+        echo \"Approval status set to ABORTED:\" \"$APPROVAL_STATUS\"
       else
         echo \"Workflow timed out\"
         echo \"Workflow approval response was not received within allotted time.\"
         APPROVAL_STATUS="UPDATE_MANUAL_APPROVAL_STATUS_TIMED_OUT"
+         echo \"Approval status set to TIMED_OUT:\" \"$APPROVAL_STATUS\"
       fi
       
       # Make Platform API call to change workflow manual approval status
