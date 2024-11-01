@@ -213,10 +213,7 @@ handlers:
       echo '{\"status\": '\\\"$APPROVAL_STATUS\\\"'}'
       
       # Make Platform API call to change workflow manual approval status
-   #    echo '{    
-   #     \"status\": '\\\"$APPROVAL_STATUS\\\"'
-   #   }' > /tmp/content.json
-      #echo "{\"status\": \"$APPROVAL_STATUS\"}" > /tmp/content.json
+      # echo "{\"status\": \"$APPROVAL_STATUS\"}" > /tmp/content.json
       if [ "x$DEBUG" == "xtrue" ];
       then
         echo \"Request payload:\"
