@@ -199,21 +199,19 @@ handlers:
         echo \"Workflow aborted by user\"
         echo \"Cancelling the manual approval request\"
         APPROVAL_STATUS="UPDATE_MANUAL_APPROVAL_STATUS_ABORTED"
-        echo \"Approval status set to ABORTED:\" \"$APPROVAL_STATUS\"
       else
         echo \"Workflow timed out\"
         echo \"Workflow approval response was not received within allotted time.\"
         APPROVAL_STATUS="UPDATE_MANUAL_APPROVAL_STATUS_TIMED_OUT"
-         echo \"Approval status set to TIMED_OUT:\" \"$APPROVAL_STATUS\"
       fi
             
       # Make Platform API call to change workflow manual approval status
       echo '{\"status\": '\\\"$APPROVAL_STATUS\\\"'}' > /tmp/content.json
-      #if [ "x$DEBUG" == "xtrue" ];
-      #then
+      if [ "x$DEBUG" == "xtrue" ];
+      then
         echo \"Request payload:\"
         cat /tmp/content.json
-      #fi
+      fi
       response=$(curl -s --max-time 150 -w \"Exit code: %{exitcode} HTTP status: %{response_code} Error: %{errormsg}\" --fail-with-body  -X POST \"$URL/v1/workflows/approval/status\" -H \"Authorization: Bearer $API_TOKEN\" -H 'Content-Type: application/json' --data-binary \"@/tmp/content.json\") || command_failed=1
       
       # Check curl exit code
