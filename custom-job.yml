@@ -168,15 +168,6 @@ handlers:
       echo '{    
         \"status\": '\\\"$JOB_STATUS\\\"',
         \"message\": \"Successfully changed workflow manual approval status\"
-      }'
-      echo '{    
-        \"status\": \"$JOB_STATUS\",
-        \"message\": \"Successfully changed workflow manual approval status\"
-      }'
-      
-      echo '{    
-        \"status\": '\\\"$JOB_STATUS\\\"',
-        \"message\": \"Successfully changed workflow manual approval status\"
       }' > $CLOUDBEES_STATUS
       
       if [ "x$DEBUG" == "xtrue" ]; 
@@ -216,14 +207,17 @@ handlers:
          echo \"Approval status set to TIMED_OUT:\" \"$APPROVAL_STATUS\"
       fi
 
-        echo '{    
+      printf '{\n  "status": "%s"\n}\n' "$APPROVAL_STATUS" > /tmp/content.json
+      cat /tmp/content.json
+      
+      echo '{    
         \"status\": '\\\"$APPROVAL_STATUS\\\"'
       }'
       
       # Make Platform API call to change workflow manual approval status
-       echo '{    
-        \"status\": '\\\"$APPROVAL_STATUS\\\"'
-      }' > /tmp/content.json
+   #    echo '{    
+   #     \"status\": '\\\"$APPROVAL_STATUS\\\"'
+   #   }' > /tmp/content.json
       #echo "{\"status\": \"$APPROVAL_STATUS\"}" > /tmp/content.json
       if [ "x$DEBUG" == "xtrue" ];
       then
