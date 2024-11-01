@@ -164,6 +164,15 @@ handlers:
         exit 1
       fi
       echo \"$COMMENTS\"
+
+      echo '{    
+        \"status\": '\\\"$JOB_STATUS\\\"',
+        \"message\": \"Successfully changed workflow manual approval status\"
+      }'
+      echo '{    
+        \"status\": \"$JOB_STATUS\",
+        \"message\": \"Successfully changed workflow manual approval status\"
+      }'
       
       echo '{    
         \"status\": '\\\"$JOB_STATUS\\\"',
