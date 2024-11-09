@@ -48,7 +48,7 @@ handlers:
 
       # Make Platform API call
       response=$(curl -s --max-time 150 -w \"Exit code: %{exitcode} HTTP status: %{response_code} Error: %{errormsg}\" --fail-with-body -X 'POST' \"$URL/v1/workflows/approval\" \
-        -H \"Authorization: Bearer foo-token\" -H 'Content-Type: application/json' -H 'Accept: application/json' \
+        -H \"Authorization: Bearer ${API_TOKEN}\" -H 'Content-Type: application/json' -H 'Accept: application/json' \
         --data-binary \"@/tmp/content.json\") || command_failed=1
 
       # Check curl exit code
@@ -129,7 +129,7 @@ handlers:
       echo \"$PAYLOAD\" > /tmp/content.json
       
       # Make Platform API call to change workflow manual approval status
-      response=$(curl -s --max-time 150 -w \"Exit code: %{exitcode} HTTP status: %{response_code} Error: %{errormsg}\" --fail-with-body  -X POST \"$URL/v1/workflows/approval/status\" -H \"Authorization: Bearer foo-token\" -H 'Content-Type: application/json' --data-binary \"@/tmp/content.json\") || command_failed=1
+      response=$(curl -s --max-time 150 -w \"Exit code: %{exitcode} HTTP status: %{response_code} Error: %{errormsg}\" --fail-with-body  -X POST \"$URL/v1/workflows/approval/status\" -H \"Authorization: Bearer $API_TOKEN\" -H 'Content-Type: application/json' --data-binary \"@/tmp/content.json\") || command_failed=1
       
       # Check curl exit code
       if [ ${command_failed:-0} -eq 1 ];
@@ -212,7 +212,7 @@ handlers:
         echo \"Request payload:\"
         cat /tmp/content.json
       fi
-      response=$(curl -s --max-time 150 -w \"Exit code: %{exitcode} HTTP status: %{response_code} Error: %{errormsg}\" --fail-with-body  -X POST \"$URL/v1/workflows/approval/status\" -H \"Authorization: Bearer foo-token\" -H 'Content-Type: application/json' --data-binary \"@/tmp/content.json\") || command_failed=1
+      response=$(curl -s --max-time 150 -w \"Exit code: %{exitcode} HTTP status: %{response_code} Error: %{errormsg}\" --fail-with-body  -X POST \"$URL/v1/workflows/approval/status\" -H \"Authorization: Bearer $API_TOKEN\" -H 'Content-Type: application/json' --data-binary \"@/tmp/content.json\") || command_failed=1
       
       # Check curl exit code
       if [ ${command_failed:-0} -eq 1 ];
