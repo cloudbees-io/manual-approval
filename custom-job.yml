@@ -24,7 +24,7 @@ handlers:
     command: /bin/sh
     args: |
       -c """
-      echo \"handler: \" ${{ handler }}
+      echo \"handler: $HANDLER\"
       if [ "x$DEBUG" == "xtrue" ]; 
       then
         echo \"DEBUG: `date` - Inside init handler\"
@@ -105,6 +105,7 @@ handlers:
       API_TOKEN: ${{ cloudbees.api.token }}
       URL: ${{ cloudbees.api.url }}
       DEBUG: ${{ inputs.debug }}
+      HANDLER: ${{ handler }}
 
   callback:
     uses: docker://badouralix/curl-jq:latest
