@@ -7,14 +7,19 @@ inputs:
   approvers:
     description: Comma separated list of approvers. Can be users or teams. If not specified, then all users who have execute permission for approval on the workflow can approve.
     required: false
-  instruction:
+  instructions:
     description: Text to display in the approval prompt
     required: false
   disallowLaunchByUser:
     description: For separation of responsibilities, if true, then the user who launched the workflow is not allowed to approve.
+    default: false
     required: false
   notifyAllEligibleUsers:
     description: If true, then all users who are eligible to approve will be notified.
+    default: false
+    required: false
+  debug:
+    description: Set to true to enable debug logging.
     default: false
     required: false
 
@@ -25,11 +30,12 @@ handlers:
     args: --handler "init"
     env:
       APPROVERS: ${{inputs.approvers}}
-      INSTRUCTION: ${{inputs.instruction}}
+      INSTRUCTIONS: ${{inputs.instruction}}
       DISALLOW_LAUNCHED_BY_USER: ${{inputs.disallowLaunchByUser}}
       NOTIFY_ALL_ELIGIBLE_USERS: ${{inputs.notifyAllEligibleUsers}}
       API_TOKEN: ${{ cloudbees.api.token }}
       URL: ${{ cloudbees.api.url }}
+      DEBUG: ${{ inputs.debug }}
 
   callback:
     uses: docker://public.ecr.aws/l7o7z1g8/actions/manual-approval:${{ action.scm.sha }}
@@ -39,6 +45,7 @@ handlers:
       PAYLOAD: ${{ handler.payload }}
       API_TOKEN: ${{ cloudbees.api.token }}
       URL: ${{ cloudbees.api.url }}
+      DEBUG: ${{ inputs.debug }}
 
   cancel:
     uses: docker://public.ecr.aws/l7o7z1g8/actions/manual-approval:${{ action.scm.sha }}
@@ -48,3 +55,4 @@ handlers:
       CANCELLATION_REASON: ${{ handler.reason }}
       API_TOKEN: ${{ cloudbees.api.token }}
       URL: ${{ cloudbees.api.url }}
+      DEBUG: ${{ inputs.debug }}

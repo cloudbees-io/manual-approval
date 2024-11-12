@@ -51,8 +51,8 @@ func (k *Config) init() error {
 	// approvers are optional
 	approvers := os.Getenv("APPROVERS")
 
-	// instruction is optional
-	instruction := os.Getenv("INSTRUCTION")
+	// instructions are optional
+	instructions := os.Getenv("INSTRUCTIONS")
 
 	// by default disallowLaunchedByUser is false
 	disallowLaunchedByUserStr := os.Getenv("DISALLOW_LAUNCHED_BY_USER")
@@ -84,8 +84,8 @@ func (k *Config) init() error {
 		body["approvers"] = strings.Split(approvers, ",")
 	}
 
-	if instruction != "" {
-		body["instruction"] = instruction
+	if instructions != "" {
+		body["instructions"] = instructions
 	}
 
 	resp, err := k.post("/v1/workflows/approval", body)
