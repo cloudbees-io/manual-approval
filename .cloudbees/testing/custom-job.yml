@@ -1,0 +1,107 @@
+apiVersion: automation.cloudbees.io/v1alpha1
+kind: action
+name: 'Manual approval'
+description: 'Request manual approval from users and teams.'
+
+inputs:
+  dockerfile:
+    description: 'Path to the Dockerfile'
+    default: Dockerfile
+  context:
+    description: 'Docker build context'
+    default: ${{ cloudbees.workspace }}
+  destination:
+    description: >
+      Target image(s) that will be published to the registries configured in the file ${HOME}/.docker/config.json
+      Type: CSV
+    required: true
+  tar-path:
+    description: 'Full path, including filename, where the image tar file should be saved.'
+    required: false
+  build-args:
+    description: >
+      Docker build arguments.
+      Type: CSV
+  labels:
+    description: >
+      Metadata to be associated with the resulting image.
+      Type: CSV
+  target:
+    description: >
+      Build a specific target stage in a multi-stage Dockerfile.
+      Type: string
+  registry-mirrors:
+    description: >
+      Registry mirror(s) to use for loading images.
+      Type: CSV
+  registry-configuration:
+    description: >
+      CloudBees registry configuration file containing the registries to use for loading images.
+      By default it uses the file containing the registries configured under 'Integrations' in the CloudBees platform.
+    default: ${{ cloudbees.registries }}
+  skip-default-registry-fallback:
+    default: 'false'
+    description: >
+      If set, fails build if registry-mirrors cannot pull image. If registry-mirrors is empty, this flag is ignored.
+      Type: Boolean
+  verbosity:
+    default: info
+    description: >
+      Log level verbosity - panic, fatal, error, warn, info, debug, trace
+  send-event:
+    default: 'true'
+    description: >
+      If set to true, then the metadata for the published container images is saved in the CloudBees platform.
+      Type: Boolean
+
+outputs:
+  digest:
+    value: ${{ steps.imgbuild.outputs.digest }}
+    description: Image digest (image ID)
+  tag:
+    value: ${{ steps.imgbuild.outputs.tag }}
+    description: Tag of the first pushed image
+  tag-digest:
+    value: ${{ steps.imgbuild.outputs.tag-digest }}
+    description: |
+      Tag of the first specified destination along with the image digest.
+      Please note that this format is not part of the OCI standard but supported by most container tools.
+      Tools loading such an image reference ignore the tag but perform the lookup based on the image repository and digest only.
+      The tag only serves as a hint for humans.
+      Using this format guarantees that the image is continued to be used even when the tag was overwritten and prevents stale image caches on different nodes.
+  image:
+    value: ${{ steps.imgbuild.outputs.image }}
+    description: |
+      Image reference of the first specified destination, including the image digest.
+      Please note that this image reference format is not part of the OCI standard but supported by most container tools.
+      Tools loading such an image reference ignore the tag but perform the lookup based on the image repository and digest only.
+      The tag only serves as a hint for humans.
+      Using this image reference format guarantees that the image is continued to be used even when the tag was overwritten and prevents stale image caches on different nodes.
+
+runs:
+  using: composite
+  steps:
+    - id: imgbuild
+      name: Build, publish, and optionally save Docker image as a tar archive.
+      uses: docker://020229604682.dkr.ecr.us-east-1.amazonaws.com/actions/kaniko-action:${{ action.scm.sha }}
+      with:
+        entrypoint: kaniko-action
+        args: |
+          --dockerfile "${{ inputs.dockerfile }}"
+          --context "${{ inputs.context }}"
+          --destination "${{ inputs.destination }}"
+          --registry-mirrors "${{ inputs.registry-mirrors }}"
+          --skip-default-registry-fallback="${{ inputs.skip-default-registry-fallback }}"
+          --verbosity "${{ inputs.verbosity }}"
+          --target "${{ inputs.target }}"
+          --send-event="${{ inputs.send-event }}"
+          ${{ inputs.tar-path && format('--tar-path "{0}"', inputs.tar-path) || '' }}
+      env:
+        DOCKER_CONFIG: ${{ cloudbees.home }}/.docker
+        DOCKER_BUILD_ARGS: ${{ inputs.build-args }}
+        DOCKER_LABELS: ${{ inputs.labels }}
+        CLOUDBEES_REGISTRY_CONFIG: ${{ inputs.registry-configuration }}
+        CLOUDBEES_API_URL: ${{ cloudbees.api.url }}
+        CLOUDBEES_API_TOKEN: ${{ cloudbees.api.token }}
+        CLOUDBEES_SCM_REPOSITORY: ${{ cloudbees.scm.repository }}
+        CLOUDBEES_SCM_SHA: ${{ cloudbees.scm.sha }}
