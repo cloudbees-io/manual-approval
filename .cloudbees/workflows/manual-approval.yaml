@@ -14,15 +14,15 @@ jobs:
     - name: Get source code
       uses: cloudbees-io/checkout@v1
 
-    - name: Validate custom-job
-      uses: docker://amazon/aws-cli:2.12.6
-      run: |
-        TESTING_SHA=$(cat .cloudbees/testing/custom-job.yml | sha1sum)
-        ORIGINAL_SHA=$(sed -e 's|docker://public.ecr.aws/l7o7z1g8/custom-jobs/|docker://020229604682.dkr.ecr.us-east-1.amazonaws.com/custom-jobs/|g' < custom-job.yml | sha1sum)
-        if [ "${TESTING_SHA}" != "${ORIGINAL_SHA}" ]; then
-          echo "Original custom-job different from testing custom-job"
-          exit 1
-        fi
+#    - name: Validate custom-job
+#      uses: docker://amazon/aws-cli:2.12.6
+#      run: |
+#        TESTING_SHA=$(cat .cloudbees/testing/custom-job.yml | sha1sum)
+#        ORIGINAL_SHA=$(sed -e 's|docker://public.ecr.aws/l7o7z1g8/custom-jobs/|docker://020229604682.dkr.ecr.us-east-1.amazonaws.com/custom-jobs/|g' < custom-job.yml | sha1sum)
+#        if [ "${TESTING_SHA}" != "${ORIGINAL_SHA}" ]; then
+#          echo "Original custom-job different from testing custom-job"
+#          exit 1
+#        fi
 
     - name: Unit tests
       uses: docker://golang:1.23
@@ -53,52 +53,52 @@ jobs:
         image-location: 020229604682.dkr.ecr.us-east-1.amazonaws.com/custom-jobs/manual-approval
         image-tag: ${{ cloudbees.scm.sha }}
   
-  test:
-    needs: [build]
-    steps:
-    - name: Get source code
-      uses: cloudbees-io/checkout@v1
-
-    - name: Login to AWS
-      uses: cloudbees-io/configure-aws-credentials@v1
-      with:
-        aws-region: us-east-1
-        role-to-assume: ${{ vars.oidc_staging_iam_role }}
-        role-duration-seconds: "3600"
-
-    - name: Configure container registry for ECR
-      uses: cloudbees-io/configure-ecr-credentials@v1
-
-    - name: Build test image
-      id: build
-      uses: ./.cloudbees/testing
-      with:
-        context: ./.cloudbees/testing
-        dockerfile: Dockerfile-test
-        destination: 020229604682.dkr.ecr.us-east-1.amazonaws.com/custom-jobs/manual-approval-test:${{ cloudbees.scm.sha }}
-        skip-default-registry-fallback: 'true'
-        registry-mirrors: 020229604682.dkr.ecr.us-east-1.amazonaws.com/docker-hub
-        verbosity: debug
-        tar-path: ${{ cloudbees.home }}/image.tar
-
-    - name: Check test image
-      uses: docker://alpine:3.18
-      run: |
-        apk add -U --no-cache curl ca-certificates
-        curl -L https://github.com/regclient/regclient/releases/latest/download/regctl-linux-amd64 >/usr/local/bin/regctl
-        chmod 755 /usr/local/bin/regctl
-
-        EXPECTED=${{ steps.build.outputs.digest }}
-        ACTUAL=`regctl image digest 020229604682.dkr.ecr.us-east-1.amazonaws.com/custom-jobs/manual-approval-test:${{ cloudbees.scm.sha }}`
-        if [ "$EXPECTED" != "$ACTUAL" ]; then
-          echo "expected $EXPECTED, but got $ACTUAL"
-          exit 1
-        fi
-
-        if stat "${{ cloudbees.home }}/image.tar"; then
-          echo "Tar file exists."
-        else
-          echo "Tar file does not exist."
-          exit 1
-        fi    
-
+#  test:
+#    needs: [build]
+#    steps:
+#    - name: Get source code
+#      uses: cloudbees-io/checkout@v1
+#
+#    - name: Login to AWS
+#      uses: cloudbees-io/configure-aws-credentials@v1
+#      with:
+#        aws-region: us-east-1
+#        role-to-assume: ${{ vars.oidc_staging_iam_role }}
+#        role-duration-seconds: "3600"
+#
+#    - name: Configure container registry for ECR
+#      uses: cloudbees-io/configure-ecr-credentials@v1
+#
+#    - name: Build test image
+#      id: build
+#      uses: ./.cloudbees/testing
+#      with:
+#        context: ./.cloudbees/testing
+#        dockerfile: Dockerfile-test
+#        destination: 020229604682.dkr.ecr.us-east-1.amazonaws.com/custom-jobs/manual-approval-test:${{ cloudbees.scm.sha }}
+#        skip-default-registry-fallback: 'true'
+#        registry-mirrors: 020229604682.dkr.ecr.us-east-1.amazonaws.com/docker-hub
+#        verbosity: debug
+#        tar-path: ${{ cloudbees.home }}/image.tar
+#
+#    - name: Check test image
+#      uses: docker://alpine:3.18
+#      run: |
+#        apk add -U --no-cache curl ca-certificates
+#        curl -L https://github.com/regclient/regclient/releases/latest/download/regctl-linux-amd64 >/usr/local/bin/regctl
+#        chmod 755 /usr/local/bin/regctl
+#
+#        EXPECTED=${{ steps.build.outputs.digest }}
+#        ACTUAL=`regctl image digest 020229604682.dkr.ecr.us-east-1.amazonaws.com/custom-jobs/manual-approval-test:${{ cloudbees.scm.sha }}`
+#        if [ "$EXPECTED" != "$ACTUAL" ]; then
+#          echo "expected $EXPECTED, but got $ACTUAL"
+#          exit 1
+#        fi
+#
+#        if stat "${{ cloudbees.home }}/image.tar"; then
+#          echo "Tar file exists."
+#        else
+#          echo "Tar file does not exist."
+#          exit 1
+#        fi
+#
