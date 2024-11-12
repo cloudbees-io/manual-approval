@@ -106,7 +106,7 @@ func (k *Config) callback() error {
 		return fmt.Errorf("failed to get PAYLOAD environment variable")
 	}
 
-	parsedPayload := make(map[string]interface{})
+	parsedPayload := map[string]interface{}{}
 	err := json.Unmarshal([]byte(payload), &parsedPayload)
 	if err != nil {
 		return err
@@ -124,7 +124,7 @@ func (k *Config) callback() error {
 	approverUserName := parsedPayload["userName"].(string)
 	fmt.Printf("Approver user name: %s\n", approverUserName)
 
-	resp, err := k.post("/v1/workflows/approval/status", []byte(payload))
+	resp, err := k.post("/v1/workflows/approval/status", parsedPayload)
 	if err != nil {
 		return err
 	}
@@ -143,7 +143,7 @@ func (k *Config) cancel() error {
 	}
 
 	// Construct request body
-	body := map[string]string{}
+	body := map[string]interface{}{}
 	if cancellationReason == "CANCELLED" {
 		fmt.Println("Workflow aborted by user")
 		fmt.Println("Cancelling the manual approval request")
@@ -170,7 +170,7 @@ func (c *RealHttpClient) Do(req *http.Request) (*http.Response, error) {
 	return http.DefaultClient.Do(req)
 }
 
-func (k *Config) post(apiPath string, requestBody interface{}) (string, error) {
+func (k *Config) post(apiPath string, requestBody map[string]interface{}) (string, error) {
 	fmt.Printf("Post http request to the platform API endpoint: %s\n", apiPath)
 
 	// Read default configuration from the environment variables
