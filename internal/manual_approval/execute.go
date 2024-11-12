@@ -106,10 +106,25 @@ func (k *Config) callback() error {
 		return fmt.Errorf("failed to get PAYLOAD environment variable")
 	}
 
-	// Construct request body
-	body := map[string]interface{}{}
+	parsedPayload := make(map[string]interface{})
+	err := json.Unmarshal([]byte(payload), &parsedPayload)
+	if err != nil {
+		return err
+	}
 
-	resp, err := k.post("/v1/workflows/approval/status", body)
+	approvalStatus := parsedPayload["status"].(string)
+	fmt.Printf("Approval status: %s\n", approvalStatus)
+
+	comments := parsedPayload["comments"].(string)
+	fmt.Printf("Comments: %s\n", comments)
+
+	respondedOn := parsedPayload["respondedOn"].(string)
+	fmt.Printf("Responded on: %s\n", respondedOn)
+
+	approverUserName := parsedPayload["userName"].(string)
+	fmt.Printf("Approver user name: %s\n", approverUserName)
+
+	resp, err := k.post("/v1/workflows/approval/status", []byte(payload))
 	if err != nil {
 		return err
 	}
