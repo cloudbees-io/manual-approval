@@ -24,6 +24,7 @@ handlers:
     command: /bin/sh
     args: |
       -c """
+      echo \"handler: \" ${{ handler }}
       if [ "x$DEBUG" == "xtrue" ]; 
       then
         echo \"DEBUG: `date` - Inside init handler\"
