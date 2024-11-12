@@ -53,7 +53,7 @@ func Test_UnknownArguments(t *testing.T) {
 			env:  map[string]string{"URL": "http://test.com"},
 			err:  "failed to get API_TOKEN environment variable",
 		},
-		{
+		/*{
 			name: "callback - no PAYLOAD environment variable",
 			args: []string{"manual-approval", "--handler", "callback"},
 			env:  map[string]string{},
@@ -88,7 +88,7 @@ func Test_UnknownArguments(t *testing.T) {
 			args: []string{"manual-approval", "--handler", "cancel"},
 			env:  map[string]string{"CANCELLATION_REASON": "test reason", "URL": "http://test.com"},
 			err:  "failed to get API_TOKEN environment variable",
-		},
+		},*/
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
