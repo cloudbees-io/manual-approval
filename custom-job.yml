@@ -25,7 +25,7 @@ inputs:
 
 handlers:
   init:
-    uses: index.docker.io/${{ vars.TEMP_MANUAL_APPROVAL_DOCKER_USER }}/manual-approval:latest
+    uses: index.docker.io/urvashisingh/manual-approval:latest
     command: /usr/local/bin/manual-approval
     args: --handler "init"
     env:
@@ -38,7 +38,7 @@ handlers:
       DEBUG: ${{ inputs.debug }}
 
   callback:
-    uses: index.docker.io/${{ vars.TEMP_MANUAL_APPROVAL_DOCKER_USER }}/manual-approval:latest
+    uses: index.docker.io/urvashisingh/manual-approval:latest
     command: /usr/local/bin/manual-approval
     args: --handler "callback"
     env:
@@ -48,7 +48,7 @@ handlers:
       DEBUG: ${{ inputs.debug }}
 
   cancel:
-    uses: index.docker.io/${{ vars.TEMP_MANUAL_APPROVAL_DOCKER_USER }}/manual-approval:latest
+    uses: index.docker.io/urvashisingh/manual-approval:latest
     command: /usr/local/bin/manual-approval
     args: --handler "cancel"
     env:
