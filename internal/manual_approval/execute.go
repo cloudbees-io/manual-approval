@@ -143,7 +143,16 @@ func (k *Config) cancel() error {
 	}
 
 	// Construct request body
-	body := map[string]interface{}{}
+	body := map[string]string{}
+	if cancellationReason == "CANCELLED" {
+		fmt.Println("Workflow aborted by user")
+		fmt.Println("Cancelling the manual approval request")
+		body["status"] = "UPDATE_MANUAL_APPROVAL_STATUS_ABORTED"
+	} else {
+		fmt.Println("Workflow timed out")
+		fmt.Println("Workflow approval response was not received within allotted time.")
+		body["status"] = "UPDATE_MANUAL_APPROVAL_STATUS_TIMED_OUT"
+	}
 
 	resp, err := k.post("/v1/workflows/approval/status", body)
 	if err != nil {
