@@ -25,6 +25,7 @@ handlers:
     args: |
       -c """
       echo \"handler: $HANDLER\"
+      echo \"handler2: ${{ toJSON(handler) }}\"
       if [ "x$DEBUG" == "xtrue" ]; 
       then
         echo \"DEBUG: `date` - Inside init handler\"
