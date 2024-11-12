@@ -44,7 +44,7 @@ jobs:
       uses: cloudbees-io/kaniko@v1
       with:
         destination: 020229604682.dkr.ecr.us-east-1.amazonaws.com/custom-jobs/manual-approval:${{ cloudbees.scm.sha }},020229604682.dkr.ecr.us-east-1.amazonaws.com/custom-jobs/manual-approval:latest
-        labels: maintainer=sdp-pod-3,email=engineering@cloudbees.io
+        labels: maintainer=cbp-cd-ro-team,email=engineering@cloudbees.io
         registry-mirrors: 020229604682.dkr.ecr.us-east-1.amazonaws.com/docker-hub
 
     - name: Run TruffleHog Container Action
