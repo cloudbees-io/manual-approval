@@ -42,5 +42,5 @@ func run(command *cobra.Command, args []string) error {
 
 func init() {
 	// Define flags for configuring the Manual Approval
-	cmd.Flags().StringVar(&cfg.Handler, "handler", "", "Handler field allows you to handler in manual approval.")
+	cmd.Flags().StringVar(&cfg.Handler, "handler", "", "Handler field allows you to choose particular handler in the manual approval custom job.")
 }
