@@ -3,7 +3,6 @@ module github.com/cloudbees-io/manual-approval
 go 1.23.3
 
 require (
-	github.com/cloudbees-io/registry-config v0.0.0-20240808192011-86b0b147c63e
 	github.com/spf13/cobra v1.8.1
 	github.com/stretchr/testify v1.9.0
 )
