@@ -83,7 +83,7 @@ func Test_init(t *testing.T) {
 				//require.Equal(t, []string{"user1@mail.com", "user2@mail.com"}, req["approvers"].([]string))
 				//require.Equal(t, "some instruction", req["instruction"].(string))
 				require.Nil(t, req["approvers"])
-				require.Nil(t, req["instruction"])
+				require.Nil(t, req["instructions"])
 				require.Equal(t, false, req["disallowLaunchedByUser"].(bool))
 				require.Equal(t, false, req["notifyAllEligibleUsers"].(bool))
 			},

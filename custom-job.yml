@@ -30,7 +30,7 @@ handlers:
     args: --handler "init"
     env:
       APPROVERS: ${{inputs.approvers}}
-      INSTRUCTIONS: ${{inputs.instruction}}
+      INSTRUCTIONS: ${{inputs.instructions}}
       DISALLOW_LAUNCHED_BY_USER: ${{inputs.disallowLaunchByUser}}
       NOTIFY_ALL_ELIGIBLE_USERS: ${{inputs.notifyAllEligibleUsers}}
       API_TOKEN: ${{ cloudbees.api.token }}

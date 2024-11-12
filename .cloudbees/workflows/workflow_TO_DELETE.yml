@@ -20,7 +20,7 @@ jobs:
       with:
         # for users either user email or userId can be provided
         approvers: SREs-team,user@email.com,1a17b9ba-a9aa-4dea-9348-e035223e5865
-        instruction: Ready to promote to production?
+        instructions: Ready to promote to production?
         disallowLaunchByUser: true 
     
     approve-promotion:
@@ -28,7 +28,7 @@ jobs:
     with:
       # for users either user email or userId can be provided
       approvers: SREs-team,user@email.com,1a17b9ba-a9aa-4dea-9348-e035223e5865
-      instruction: Ready to promote to production?
+      instructions: Ready to promote to production?
       disallowLaunchByUser: true 
       
     - id: afterManualApproval
