@@ -2,7 +2,9 @@ package cmd
 
 import (
 	"os"
+	"strconv"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/require"
 )
@@ -32,8 +34,8 @@ func Test_UnknownArguments(t *testing.T) {
 		{
 			name: "init - no URL environment variable",
 			args: []string{"manual-approval", "--handler", "init"},
-			env:  map[string]string{},
-			err:  "failed to get URL environment variable",
+			env:  map[string]string{"CLOUDBEES_STATUS": "/tmp/fake-status" + strconv.Itoa(time.Now().Nanosecond())},
+			err:  "URL environment variable missing",
 		},
 		{
 			name: "init - wrong DISALLOW_LAUNCHED_BY_USER environment variable",
@@ -50,45 +52,53 @@ func Test_UnknownArguments(t *testing.T) {
 		{
 			name: "init - no API_TOKEN environment variable",
 			args: []string{"manual-approval", "--handler", "init"},
-			env:  map[string]string{"URL": "http://test.com"},
-			err:  "failed to get API_TOKEN environment variable",
+			env:  map[string]string{"URL": "http://test.com", "CLOUDBEES_STATUS": "/tmp/fake-status.out" + strconv.Itoa(time.Now().Nanosecond())},
+			err:  "API_TOKEN environment variable missing",
 		},
-		/*{
+		{
+			name: "init - no API_TOKEN environment variable",
+			args: []string{"manual-approval", "--handler", "init"},
+			env:  map[string]string{"URL": "http://test.com", "API_TOKEN": "12345"},
+			err:  "CLOUDBEES_STATUS environment variable missing",
+		},
+		{
 			name: "callback - no PAYLOAD environment variable",
 			args: []string{"manual-approval", "--handler", "callback"},
 			env:  map[string]string{},
-			err:  "failed to get PAYLOAD environment variable",
+			err:  "PAYLOAD environment variable missing",
 		},
 		{
 			name: "callback - no URL environment variable",
 			args: []string{"manual-approval", "--handler", "callback"},
-			env:  map[string]string{"PAYLOAD": "test payload"},
-			err:  "failed to get URL environment variable",
+			env: map[string]string{"PAYLOAD": "{\"status\": \"UPDATE_MANUAL_APPROVAL_STATUS_APPROVED\", \"comments\": \"lgtm\", \"respondedOn\": \"some-time\", \"userName\": \"Some One\"}",
+				"CLOUDBEES_STATUS": "/tmp/fake-status.out" + strconv.Itoa(time.Now().Nanosecond())},
+			err: "URL environment variable missing",
 		},
 		{
 			name: "callback - no API_TOKEN environment variable",
 			args: []string{"manual-approval", "--handler", "callback"},
-			env:  map[string]string{"PAYLOAD": "test payload", "URL": "http://test.com"},
-			err:  "failed to get API_TOKEN environment variable",
+			env: map[string]string{"PAYLOAD": "{\"status\": \"UPDATE_MANUAL_APPROVAL_STATUS_APPROVED\", \"comments\": \"lgtm\", \"respondedOn\": \"some-time\", \"userName\": \"Some One\"}",
+				"URL": "http://test.com", "CLOUDBEES_STATUS": "/tmp/fake-status.out" + strconv.Itoa(time.Now().Nanosecond())},
+			err: "API_TOKEN environment variable missing",
 		},
 		{
 			name: "cancel - no CANCELLATION_REASON environment variable",
 			args: []string{"manual-approval", "--handler", "cancel"},
 			env:  map[string]string{},
-			err:  "failed to get CANCELLATION_REASON environment variable",
+			err:  "CANCELLATION_REASON environment variable missing",
 		},
 		{
 			name: "cancel - no URL environment variable",
 			args: []string{"manual-approval", "--handler", "cancel"},
 			env:  map[string]string{"CANCELLATION_REASON": "test reason"},
-			err:  "failed to get URL environment variable",
+			err:  "URL environment variable missing",
 		},
 		{
 			name: "cancel - no API_TOKEN environment variable",
 			args: []string{"manual-approval", "--handler", "cancel"},
 			env:  map[string]string{"CANCELLATION_REASON": "test reason", "URL": "http://test.com"},
-			err:  "failed to get API_TOKEN environment variable",
-		},*/
+			err:  "API_TOKEN environment variable missing",
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

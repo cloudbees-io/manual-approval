@@ -28,12 +28,12 @@ func Test_defaultConfig(t *testing.T) {
 		{
 			name: "no API_TOKEN environment variable",
 			env:  map[string]string{"URL": "http://test.com"},
-			err:  "failed to get API_TOKEN environment variable",
+			err:  "API_TOKEN environment variable missing",
 		},
 		{
 			name: "no URL environment variable",
 			env:  map[string]string{},
-			err:  "failed to get URL environment variable",
+			err:  "URL environment variable missing",
 		},
 	}
 	for _, tt := range tests {

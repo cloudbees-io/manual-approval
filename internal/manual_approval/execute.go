@@ -14,6 +14,16 @@ import (
 	"time"
 )
 
+type CreateManualApprovalResponse struct {
+	Approvers []Approvers `json:"approvers"`
+}
+
+type Approvers struct {
+	UserName string `json:"userName"`
+	UserId   string `json:"userId"`
+	Email    string `json:"email"`
+}
+
 var debug bool
 
 func init() {
@@ -40,12 +50,12 @@ func (k *Config) defaultConfig() (string, string, error) {
 
 	apiUrl := os.Getenv("URL")
 	if apiUrl == "" {
-		return "", "", fmt.Errorf("failed to get URL environment variable")
+		return "", "", fmt.Errorf("URL environment variable missing")
 	}
 
 	apiToken := os.Getenv("API_TOKEN")
 	if apiToken == "" {
-		return "", "nil", fmt.Errorf("failed to get API_TOKEN environment variable")
+		return "", "nil", fmt.Errorf("API_TOKEN environment variable missing")
 	}
 
 	return apiUrl, apiToken, nil
@@ -96,17 +106,31 @@ func (k *Config) init() error {
 
 	resp, err := k.post("/v1/workflows/approval", body)
 	if err != nil {
-		ferr := writeStatus("FAILED", fmt.Sprintf("Failed to initialize workflow manual approval with error: '%s'", err))
+		fmt.Printf("ERROR: API call failed with error: '%s'\n", err)
+		ferr := writeStatus("FAILED", fmt.Sprintf("Failed to initialize workflow manual approval request: '%s'", err))
 		if ferr != nil {
 			return ferr
 		}
 		return err
 	}
+	//get the names of potential approvers from the response
+	parsedResp := CreateManualApprovalResponse{}
+	err = json.Unmarshal([]byte(resp), &parsedResp)
+	if err != nil {
+		return err
+	}
+	users := make([]string, len(parsedResp.Approvers))
+	for i := range parsedResp.Approvers {
+		users[i] = parsedResp.Approvers[i].UserName
+	}
 
-	fmt.Printf("Response: %s\n", resp)
+	fmt.Printf("Waiting for approval from one of the following: %s\n", strings.Join(users, ","))
+	if instructions != "" {
+		fmt.Printf("Instructions:\n%s\n", instructions)
+	}
+
 	return writeStatus("PENDING_APPROVAL", "Waiting for approval from approvers")
 
-	return nil
 }
 
 func (k *Config) callback() error {
@@ -114,8 +138,10 @@ func (k *Config) callback() error {
 
 	payload := os.Getenv("PAYLOAD")
 	if payload == "" {
-		return fmt.Errorf("failed to get PAYLOAD environment variable")
+		return fmt.Errorf("PAYLOAD environment variable missing")
 	}
+
+	Debugf("Incoming payload: '%s'\n", payload)
 
 	parsedPayload := map[string]interface{}{}
 	err := json.Unmarshal([]byte(payload), &parsedPayload)
@@ -135,14 +161,34 @@ func (k *Config) callback() error {
 	approverUserName := parsedPayload["userName"].(string)
 	Debugf("Approver user name: %s\n", approverUserName)
 
-	resp, err := k.post("/v1/workflows/approval/status", parsedPayload)
+	_, err = k.post("/v1/workflows/approval/status", parsedPayload)
 	if err != nil {
+		fmt.Printf("ERROR: API call failed with error: '%s'\n", err)
+		ferr := writeStatus("FAILED", fmt.Sprintf("Failed to change workflow manual approval status: '%s'", err))
+		if ferr != nil {
+			return ferr
+		}
 		return err
 	}
 
-	Debugf("Response: %s\n", resp)
+	var jobStatus string
+	switch approvalStatus {
+	case "UPDATE_MANUAL_APPROVAL_STATUS_APPROVED":
+		jobStatus = "APPROVED"
+		fmt.Printf("Approved by %s on %s with comments:\n%s\n", approverUserName, respondedOn, comments)
+	case "UPDATE_MANUAL_APPROVAL_STATUS_REJECTED":
+		jobStatus = "REJECTED"
+		fmt.Printf("Rejected by %s on %s with comments:\n%s\n", approverUserName, respondedOn, comments)
+	default:
+		fmt.Printf("ERROR: Unexpected approval status '%s'", approvalStatus)
+		ferr := writeStatus("FAILED", fmt.Sprintf("Unexpected approval status '%s'", approvalStatus))
+		if ferr != nil {
+			return ferr
+		}
+		return fmt.Errorf("Unexpected approval status '%s'", approvalStatus)
+	}
 
-	return nil
+	return writeStatus(jobStatus, "Successfully changed workflow manual approval status")
 }
 
 func (k *Config) cancel() error {
@@ -150,7 +196,7 @@ func (k *Config) cancel() error {
 
 	cancellationReason := os.Getenv("CANCELLATION_REASON")
 	if cancellationReason == "" {
-		return fmt.Errorf("failed to get CANCELLATION_REASON environment variable")
+		return fmt.Errorf("CANCELLATION_REASON environment variable missing")
 	}
 
 	// Construct request body
@@ -167,10 +213,11 @@ func (k *Config) cancel() error {
 
 	resp, err := k.post("/v1/workflows/approval/status", body)
 	if err != nil {
+		fmt.Printf("ERROR: API call failed with error: '%s'\n", err)
 		return err
 	}
 
-	fmt.Printf("Response: %s\n", resp)
+	Debugf("Response: %s\n", resp)
 	return nil
 }
 
@@ -262,6 +309,6 @@ func (k *Config) post(apiPath string, requestBody map[string]interface{}) (strin
 func Debugf(format string, a ...any) {
 	if debug {
 		t := time.Now()
-		fmt.Printf("%s - "+format, append([]any{t.Format(time.RFC3339)}, a...))
+		fmt.Printf("%s - DEBUG: "+format, append([]any{t.Format(time.RFC3339)}, a...))
 	}
 }
