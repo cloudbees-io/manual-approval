@@ -25,7 +25,7 @@ inputs:
 
 handlers:
   init:
-    uses: docker://urvashisingh/manual-approval:34d9a7c5207322227f8700365ad6f439e13da007
+    uses: docker://urvashisingh/manual-approval:b7864a2ebf201dae681fd0884f49de0cb81d888c
     command: /usr/local/bin/manual-approval
     args: --handler "init"
     env:
@@ -38,7 +38,7 @@ handlers:
       DEBUG: ${{ inputs.debug }}
 
   callback:
-    uses: docker://urvashisingh/manual-approval:34d9a7c5207322227f8700365ad6f439e13da007
+    uses: docker://urvashisingh/manual-approval:b7864a2ebf201dae681fd0884f49de0cb81d888c
     command: /usr/local/bin/manual-approval
     args: --handler "callback"
     env:
@@ -48,7 +48,7 @@ handlers:
       DEBUG: ${{ inputs.debug }}
 
   cancel:
-    uses: docker://urvashisingh/manual-approval:34d9a7c5207322227f8700365ad6f439e13da007
+    uses: docker://urvashisingh/manual-approval:b7864a2ebf201dae681fd0884f49de0cb81d888c
     command: /usr/local/bin/manual-approval
     args: --handler "cancel"
     env:
