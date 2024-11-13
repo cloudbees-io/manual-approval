@@ -43,7 +43,7 @@ handlers:
     args: --handler "callback"
     env:
       PAYLOAD: ${{ handler.payload }}
-      API_TOKEN: ${{ cloudbees.api.token }}err
+      API_TOKEN: ${{ cloudbees.api.token }}
       URL: ${{ cloudbees.api.url }}
       DEBUG: ${{ inputs.debug }}
 
@@ -53,6 +53,6 @@ handlers:
     args: --handler "cancel"
     env:
       CANCELLATION_REASON: ${{ handler.reason }}
-      API_TOKEN: ${{ cloudbees.api.token }}
+      API_TOKEN: ${{ cloudbees.api.token }}1
       URL: ${{ cloudbees.api.url }}
       DEBUG: ${{ inputs.debug }}
