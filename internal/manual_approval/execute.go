@@ -11,12 +11,18 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 )
+
+var debug bool
+
+func init() {
+	debug = os.Getenv("DEBUG") == "true"
+}
 
 func (k *Config) Run(ctx context.Context) error {
 	k.Context = ctx
 
-	fmt.Printf("Handler: %s\n", k.Handler)
 	switch k.Handler {
 	case "init":
 		return k.init()
@@ -30,7 +36,7 @@ func (k *Config) Run(ctx context.Context) error {
 }
 
 func (k *Config) defaultConfig() (string, string, error) {
-	fmt.Printf("Read default configuration from the environment variables")
+	Debugf("Read default configuration from the environment variables")
 
 	apiUrl := os.Getenv("URL")
 	if apiUrl == "" {
@@ -46,7 +52,7 @@ func (k *Config) defaultConfig() (string, string, error) {
 }
 
 func (k *Config) init() error {
-	fmt.Printf("Run init handler\n")
+	Debugf("Inside init handler\n")
 
 	// approvers are optional
 	approvers := os.Getenv("APPROVERS")
@@ -90,16 +96,21 @@ func (k *Config) init() error {
 
 	resp, err := k.post("/v1/workflows/approval", body)
 	if err != nil {
+		ferr := writeStatus("FAILED", fmt.Sprintf("Failed to initialize workflow manual approval with error: '%s'", err))
+		if ferr != nil {
+			return ferr
+		}
 		return err
 	}
 
 	fmt.Printf("Response: %s\n", resp)
+	return writeStatus("PENDING_APPROVAL", "Waiting for approval from approvers")
 
 	return nil
 }
 
 func (k *Config) callback() error {
-	fmt.Printf("Run callback handler\n")
+	Debugf("Inside callback handler\n")
 
 	payload := os.Getenv("PAYLOAD")
 	if payload == "" {
@@ -113,29 +124,29 @@ func (k *Config) callback() error {
 	}
 
 	approvalStatus := parsedPayload["status"].(string)
-	fmt.Printf("Approval status: %s\n", approvalStatus)
+	Debugf("Approval status: %s\n", approvalStatus)
 
 	comments := parsedPayload["comments"].(string)
-	fmt.Printf("Comments: %s\n", comments)
+	Debugf("Comments: %s\n", comments)
 
 	respondedOn := parsedPayload["respondedOn"].(string)
-	fmt.Printf("Responded on: %s\n", respondedOn)
+	Debugf("Responded on: %s\n", respondedOn)
 
 	approverUserName := parsedPayload["userName"].(string)
-	fmt.Printf("Approver user name: %s\n", approverUserName)
+	Debugf("Approver user name: %s\n", approverUserName)
 
 	resp, err := k.post("/v1/workflows/approval/status", parsedPayload)
 	if err != nil {
 		return err
 	}
 
-	fmt.Printf("Response: %s\n", resp)
+	Debugf("Response: %s\n", resp)
 
 	return nil
 }
 
 func (k *Config) cancel() error {
-	fmt.Printf("Run cancel handler\n")
+	Debugf("Inside cancel handler\n")
 
 	cancellationReason := os.Getenv("CANCELLATION_REASON")
 	if cancellationReason == "" {
@@ -160,7 +171,27 @@ func (k *Config) cancel() error {
 	}
 
 	fmt.Printf("Response: %s\n", resp)
+	return nil
+}
 
+func writeStatus(status string, message string) error {
+	statusFile := os.Getenv("CLOUDBEES_STATUS")
+	if statusFile == "" {
+		return fmt.Errorf("CLOUDBEES_STATUS environment variable missing")
+	}
+	output := map[string]interface{}{
+		"status":  status,
+		"message": message,
+	}
+
+	outputBytes, err := json.Marshal(&output)
+	if err != nil {
+		return err
+	}
+	err = os.WriteFile(statusFile, outputBytes, 0666)
+	if err != nil {
+		return fmt.Errorf("failed to write to %s: %w", statusFile, err)
+	}
 	return nil
 }
 
@@ -171,7 +202,7 @@ func (c *RealHttpClient) Do(req *http.Request) (*http.Response, error) {
 }
 
 func (k *Config) post(apiPath string, requestBody map[string]interface{}) (string, error) {
-	fmt.Printf("Post http request to the platform API endpoint: %s\n", apiPath)
+	Debugf("Post http request to the platform API endpoint: %s\n", apiPath)
 
 	// Read default configuration from the environment variables
 	apiUrl, apiToken, err := k.defaultConfig()
@@ -190,6 +221,7 @@ func (k *Config) post(apiPath string, requestBody map[string]interface{}) (strin
 	if err != nil {
 		return "", err
 	}
+	Debugf("Payload: %s\n", string(body))
 
 	// Use default client if it is not already provided in the configuration
 	if k.Client == nil {
@@ -225,4 +257,11 @@ func (k *Config) post(apiPath string, requestBody map[string]interface{}) (strin
 	}
 
 	return string(responseBody), nil
+}
+
+func Debugf(format string, a ...any) {
+	if debug {
+		t := time.Now()
+		fmt.Printf("%s - "+format, append([]any{t.Format(time.RFC3339)}, a...))
+	}
 }

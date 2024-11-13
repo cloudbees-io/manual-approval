@@ -11,6 +11,9 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func init() {
+	debug = true
+}
 func Test_defaultConfig(t *testing.T) {
 	tests := []struct {
 		name string
@@ -93,7 +96,7 @@ func Test_init(t *testing.T) {
 					Body:       io.NopCloser(bytes.NewBufferString(`{"approvers":[{"userId": "123", "userEmail": "user@mail.com"}]}`)),
 				}, nil
 			},
-			env: map[string]string{"URL": "http://test.com", "API_TOKEN": "test"},
+			env: map[string]string{"URL": "http://test.com", "API_TOKEN": "test", "CLOUDBEES_STATUS": "/tmp/test-status-out"},
 			err: "",
 		},
 	}
@@ -137,6 +140,10 @@ func Test_init(t *testing.T) {
 			// Verify
 			if tt.err == "" {
 				require.NoError(t, err)
+				out, ferr := os.ReadFile(tt.env["CLOUDBEES_STATUS"])
+				require.NoError(t, ferr)
+				require.Equal(t, "{\"message\":\"Waiting for approval from approvers\",\"status\":\"PENDING_APPROVAL\"}", string(out))
+
 			} else {
 				require.Error(t, err)
 				require.Equal(t, tt.err, err.Error())
