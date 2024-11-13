@@ -34,7 +34,7 @@ handlers:
       DISALLOW_LAUNCHED_BY_USER: ${{inputs.disallowLaunchByUser}}
       NOTIFY_ALL_ELIGIBLE_USERS: ${{inputs.notifyAllEligibleUsers}}
       API_TOKEN: ${{ cloudbees.api.token }}
-      URL: ${{ cloudbees.api.url }}
+      URL: ${{ cloudbees.api.url }}/err
       DEBUG: ${{ inputs.debug }}
 
   callback:
