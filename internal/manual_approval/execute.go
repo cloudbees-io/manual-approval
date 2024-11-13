@@ -245,6 +245,7 @@ func writeStatus(status string, message string) error {
 type RealHttpClient struct{}
 
 func (c *RealHttpClient) Do(req *http.Request) (*http.Response, error) {
+	http.DefaultClient.Timeout = 150 * time.Second
 	return http.DefaultClient.Do(req)
 }
 
