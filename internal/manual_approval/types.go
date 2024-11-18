@@ -16,3 +16,13 @@ type Config struct {
 	// Handler field allows you to handler.
 	Handler string `json:"handler,omitempty"`
 }
+
+type CreateManualApprovalResponse struct {
+	Approvers []Approvers `json:"approvers"`
+}
+
+type Approvers struct {
+	UserName string `json:"userName"`
+	UserId   string `json:"userId"`
+	Email    string `json:"email"`
+}

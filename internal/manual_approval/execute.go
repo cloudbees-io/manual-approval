@@ -14,16 +14,6 @@ import (
 	"time"
 )
 
-type CreateManualApprovalResponse struct {
-	Approvers []Approvers `json:"approvers"`
-}
-
-type Approvers struct {
-	UserName string `json:"userName"`
-	UserId   string `json:"userId"`
-	Email    string `json:"email"`
-}
-
 var debug bool
 
 func init() {
@@ -46,7 +36,7 @@ func (k *Config) Run(ctx context.Context) error {
 }
 
 func (k *Config) defaultConfig() (string, string, error) {
-	Debugf("Read default configuration from the environment variables")
+	debugf("Read default configuration from the environment variables\n")
 
 	apiUrl := os.Getenv("URL")
 	if apiUrl == "" {
@@ -62,7 +52,7 @@ func (k *Config) defaultConfig() (string, string, error) {
 }
 
 func (k *Config) init() error {
-	Debugf("Inside init handler\n")
+	debugf("Inside init handler\n")
 
 	// approvers are optional
 	approvers := os.Getenv("APPROVERS")
@@ -113,15 +103,17 @@ func (k *Config) init() error {
 		}
 		return err
 	}
+
 	//get the names of potential approvers from the response
 	parsedResp := CreateManualApprovalResponse{}
 	err = json.Unmarshal([]byte(resp), &parsedResp)
 	if err != nil {
 		return err
 	}
+
 	users := make([]string, len(parsedResp.Approvers))
-	for i := range parsedResp.Approvers {
-		users[i] = parsedResp.Approvers[i].UserName
+	for i, approver := range parsedResp.Approvers {
+		users[i] = approver.UserName
 	}
 
 	fmt.Printf("Waiting for approval from one of the following: %s\n", strings.Join(users, ","))
@@ -130,18 +122,17 @@ func (k *Config) init() error {
 	}
 
 	return writeStatus("PENDING_APPROVAL", "Waiting for approval from approvers")
-
 }
 
 func (k *Config) callback() error {
-	Debugf("Inside callback handler\n")
+	debugf("Inside callback handler\n")
 
 	payload := os.Getenv("PAYLOAD")
 	if payload == "" {
 		return fmt.Errorf("PAYLOAD environment variable missing")
 	}
 
-	Debugf("Incoming payload: '%s'\n", payload)
+	debugf("Incoming payload: '%s'\n", payload)
 
 	parsedPayload := map[string]interface{}{}
 	err := json.Unmarshal([]byte(payload), &parsedPayload)
@@ -150,16 +141,16 @@ func (k *Config) callback() error {
 	}
 
 	approvalStatus := parsedPayload["status"].(string)
-	Debugf("Approval status: %s\n", approvalStatus)
+	debugf("Approval status: '%s'\n", approvalStatus)
 
 	comments := parsedPayload["comments"].(string)
-	Debugf("Comments: %s\n", comments)
+	debugf("Comments: '%s'\n", comments)
 
 	respondedOn := parsedPayload["respondedOn"].(string)
-	Debugf("Responded on: %s\n", respondedOn)
+	debugf("Responded on: '%s'\n", respondedOn)
 
 	approverUserName := parsedPayload["userName"].(string)
-	Debugf("Approver user name: %s\n", approverUserName)
+	debugf("Approver user name: '%s'\n", approverUserName)
 
 	_, err = k.post("/v1/workflows/approval/status", parsedPayload)
 	if err != nil {
@@ -192,7 +183,7 @@ func (k *Config) callback() error {
 }
 
 func (k *Config) cancel() error {
-	Debugf("Inside cancel handler\n")
+	debugf("Inside cancel handler\n")
 
 	cancellationReason := os.Getenv("CANCELLATION_REASON")
 	if cancellationReason == "" {
@@ -217,28 +208,7 @@ func (k *Config) cancel() error {
 		return err
 	}
 
-	Debugf("Response: %s\n", resp)
-	return nil
-}
-
-func writeStatus(status string, message string) error {
-	statusFile := os.Getenv("CLOUDBEES_STATUS")
-	if statusFile == "" {
-		return fmt.Errorf("CLOUDBEES_STATUS environment variable missing")
-	}
-	output := map[string]interface{}{
-		"status":  status,
-		"message": message,
-	}
-
-	outputBytes, err := json.Marshal(&output)
-	if err != nil {
-		return err
-	}
-	err = os.WriteFile(statusFile, outputBytes, 0666)
-	if err != nil {
-		return fmt.Errorf("failed to write to %s: %w", statusFile, err)
-	}
+	debugf("Response: '%s'\n", resp)
 	return nil
 }
 
@@ -250,7 +220,7 @@ func (c *RealHttpClient) Do(req *http.Request) (*http.Response, error) {
 }
 
 func (k *Config) post(apiPath string, requestBody map[string]interface{}) (string, error) {
-	Debugf("Post http request to the platform API endpoint: %s\n", apiPath)
+	debugf("Post http request to the platform API endpoint: '%s'\n", apiPath)
 
 	// Read default configuration from the environment variables
 	apiUrl, apiToken, err := k.defaultConfig()
@@ -269,7 +239,7 @@ func (k *Config) post(apiPath string, requestBody map[string]interface{}) (strin
 	if err != nil {
 		return "", err
 	}
-	Debugf("Payload: %s\n", string(body))
+	debugf("Payload: '%s'\n", string(body))
 
 	// Use default client if it is not already provided in the configuration
 	if k.Client == nil {
@@ -300,16 +270,39 @@ func (k *Config) post(apiPath string, requestBody map[string]interface{}) (strin
 		return "", err
 	}
 
+	response := string(responseBody)
+
 	if resp.StatusCode != 200 {
-		return string(responseBody), fmt.Errorf("failed to send event: \nPOST %s\nHTTP/%d %s\n", requestURL, resp.StatusCode, resp.Status)
+		return response, fmt.Errorf("failed to send event: \nPOST %s\nHTTP/%d %s\n", requestURL, resp.StatusCode, resp.Status)
 	}
 
-	return string(responseBody), nil
+	return response, nil
 }
 
-func Debugf(format string, a ...any) {
+func debugf(format string, a ...any) {
 	if debug {
 		t := time.Now()
-		fmt.Printf("%s - DEBUG: "+format, append([]any{t.Format(time.RFC3339)}, a...))
+		fmt.Printf("%s - DEBUG: "+format, append([]any{t.Format(time.RFC3339)}, a...)...)
 	}
+}
+
+func writeStatus(status string, message string) error {
+	statusFile := os.Getenv("CLOUDBEES_STATUS")
+	if statusFile == "" {
+		return fmt.Errorf("CLOUDBEES_STATUS environment variable missing")
+	}
+	output := map[string]interface{}{
+		"status":  status,
+		"message": message,
+	}
+
+	outputBytes, err := json.Marshal(&output)
+	if err != nil {
+		return err
+	}
+	err = os.WriteFile(statusFile, outputBytes, 0666)
+	if err != nil {
+		return fmt.Errorf("failed to write to %s: %w", statusFile, err)
+	}
+	return nil
 }
