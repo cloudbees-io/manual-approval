@@ -68,7 +68,7 @@ jobs:
         curl -L https://github.com/regclient/regclient/releases/latest/download/regctl-linux-amd64 >/usr/local/bin/regctl
         chmod 755 /usr/local/bin/regctl
 
-        EXPECTED=${{ steps.build.outputs.digest }}
+        EXPECTED=${{ steps.build-test-image.outputs.digest }}
         ACTUAL=`regctl image digest index.docker.io/${{ vars.TEMP_MANUAL_APPROVAL_DOCKER_USER }}/manual-approval-test:${{ cloudbees.scm.sha }}`
         if [ "$EXPECTED" != "$ACTUAL" ]; then
           echo "expected $EXPECTED, but got $ACTUAL"
