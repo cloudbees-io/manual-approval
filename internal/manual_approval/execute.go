@@ -12,6 +12,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/yuin/goldmark"
 )
 
 var debug bool
@@ -59,6 +61,15 @@ func (k *Config) init() error {
 
 	// instructions are optional
 	instructions := os.Getenv("INSTRUCTIONS")
+
+	// Add markdown format support to instructions
+	var buf bytes.Buffer
+	md := goldmark.New()
+	if err := md.Convert([]byte(instructions), &buf); err != nil {
+		fmt.Printf("Failed to convert instruction markdown to html: %v\n", err)
+	} else {
+		instructions = buf.String()
+	}
 
 	// by default disallowLaunchedByUser is false
 	disallowLaunchedByUserStr := os.Getenv("DISALLOW_LAUNCHED_BY_USER")

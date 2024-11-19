@@ -5,6 +5,7 @@ go 1.23.3
 require (
 	github.com/spf13/cobra v1.8.1
 	github.com/stretchr/testify v1.9.0
+	github.com/yuin/goldmark v1.7.8
 )
 
 require (

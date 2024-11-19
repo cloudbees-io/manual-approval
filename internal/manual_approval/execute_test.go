@@ -11,6 +11,11 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+var (
+	instructionsInput  = "***instruction***\n`instruction2`\n# instruction3\n## instruction4\n### instruction5\n\n> Blockquotes can contain multiple paragraphs\n>\n> Add a > on the blank lines between the paragraps.\n\n- Rirst item\n- Second Item\n- Third item \n  - Indented item\n  - Indented item\n- Fourth item"
+	instructionsOutput = "<p><em><strong>instruction</strong></em>\n<code>instruction2</code></p>\n<h1>instruction3</h1>\n<h2>instruction4</h2>\n<h3>instruction5</h3>\n<blockquote>\n<p>Blockquotes can contain multiple paragraphs</p>\n<p>Add a &gt; on the blank lines between the paragraps.</p>\n</blockquote>\n<ul>\n<li>Rirst item</li>\n<li>Second Item</li>\n<li>Third item\n<ul>\n<li>Indented item</li>\n<li>Indented item</li>\n</ul>\n</li>\n<li>Fourth item</li>\n</ul>\n"
+)
+
 func init() {
 	debug = true
 }
@@ -84,7 +89,7 @@ func Test_init(t *testing.T) {
 			name: "success",
 			reqCheckFunc: func(req map[string]interface{}) {
 				//require.Equal(t, []string{"user1@mail.com", "user2@mail.com"}, req["approvers"].([]string))
-				//require.Equal(t, "some instruction", req["instruction"].(string))
+				//require.Equal(t, "some instruction", req["instructions"].(string))
 				require.Nil(t, req["approvers"])
 				require.Nil(t, req["instructions"])
 				require.Equal(t, false, req["disallowLaunchedByUser"].(bool))
@@ -97,6 +102,25 @@ func Test_init(t *testing.T) {
 				}, nil
 			},
 			env: map[string]string{"URL": "http://test.com", "API_TOKEN": "test", "CLOUDBEES_STATUS": "/tmp/test-status-out"},
+			err: "",
+		},
+		{
+			name: "success with markdown instruction",
+			reqCheckFunc: func(req map[string]interface{}) {
+				//require.Equal(t, []string{"user1@mail.com", "user2@mail.com"}, req["approvers"].([]string))
+				require.NotNil(t, req["instructions"])
+				require.Equal(t, instructionsOutput, req["instructions"].(string))
+				require.Nil(t, req["approvers"])
+				require.Equal(t, false, req["disallowLaunchedByUser"].(bool))
+				require.Equal(t, false, req["notifyAllEligibleUsers"].(bool))
+			},
+			respGenFunc: func() (*http.Response, error) {
+				return &http.Response{
+					StatusCode: 200,
+					Body:       io.NopCloser(bytes.NewBufferString(`{"approvers":[{"userId": "123", "userEmail": "user@mail.com"}]}`)),
+				}, nil
+			},
+			env: map[string]string{"URL": "http://test.com", "API_TOKEN": "test", "CLOUDBEES_STATUS": "/tmp/test-status-out", "INSTRUCTIONS": instructionsInput},
 			err: "",
 		},
 	}
