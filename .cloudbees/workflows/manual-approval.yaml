@@ -87,7 +87,7 @@ jobs:
         password: ${{ secrets.TEMP_MANUAL_APPROVAL_DOCKER_PASSWORD }}
 
     - name: Build test image
-      id: build-image
+      id: build-test-image
       uses: cloudbees-io/kaniko@v1
       with:
 #        destination: 020229604682.dkr.ecr.us-east-1.amazonaws.com/custom-jobs/manual-approval-test:${{ cloudbees.scm.sha }}
