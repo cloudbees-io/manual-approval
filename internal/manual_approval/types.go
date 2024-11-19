@@ -9,9 +9,15 @@ type HttpClient interface {
 	Do(req *http.Request) (*http.Response, error)
 }
 
+type StdOut interface {
+	Printf(format string, a ...any)
+	Println(a ...any)
+}
+
 type Config struct {
 	context.Context
 	Client HttpClient
+	Output StdOut
 
 	// Handler field allows you to handler.
 	Handler string `json:"handler,omitempty"`

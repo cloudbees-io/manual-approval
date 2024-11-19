@@ -18,12 +18,34 @@ import (
 
 var debug bool
 
+type RealHttpClient struct{}
+
+func (c *RealHttpClient) Do(req *http.Request) (*http.Response, error) {
+	http.DefaultClient.Timeout = 150 * time.Second
+	return http.DefaultClient.Do(req)
+}
+
+type RealStdOut struct{}
+
+func (c *RealStdOut) Printf(format string, a ...any) {
+	fmt.Printf(format, a...)
+}
+
+func (c *RealStdOut) Println(a ...any) {
+	fmt.Println(a...)
+}
+
 func init() {
 	debug = os.Getenv("DEBUG") == "true"
 }
 
 func (k *Config) Run(ctx context.Context) error {
 	k.Context = ctx
+
+	// Use default std out if it is not already provided in the configuration
+	if k.Output == nil {
+		k.Output = &RealStdOut{}
+	}
 
 	switch k.Handler {
 	case "init":
@@ -98,7 +120,7 @@ func (k *Config) init() error {
 
 	resp, err := k.post("/v1/workflows/approval", body)
 	if err != nil {
-		fmt.Printf("ERROR: API call failed with error: '%s'\n", err)
+		k.Output.Printf("ERROR: API call failed with error: '%s'\n", err)
 		ferr := writeStatus("FAILED", fmt.Sprintf("Failed to initialize workflow manual approval request: '%s'", err))
 		if ferr != nil {
 			return ferr
@@ -118,9 +140,9 @@ func (k *Config) init() error {
 		users[i] = approver.UserName
 	}
 
-	fmt.Printf("Waiting for approval from one of the following: %s\n", strings.Join(users, ","))
+	k.Output.Printf("Waiting for approval from one of the following: %s\n", strings.Join(users, ","))
 	if instructions != "" {
-		fmt.Printf("Instructions:\n%s\n", markdown(instructions))
+		k.Output.Printf("Instructions:\n%s\n", markdown(instructions))
 	}
 
 	return writeStatus("PENDING_APPROVAL", "Waiting for approval from approvers")
@@ -168,12 +190,12 @@ func (k *Config) callback() error {
 	switch approvalStatus {
 	case "UPDATE_MANUAL_APPROVAL_STATUS_APPROVED":
 		jobStatus = "APPROVED"
-		fmt.Printf("Approved by %s on %s with comments:\n%s\n", approverUserName, respondedOn, comments)
+		k.Output.Printf("Approved by %s on %s with comments:\n%s\n", approverUserName, respondedOn, comments)
 	case "UPDATE_MANUAL_APPROVAL_STATUS_REJECTED":
 		jobStatus = "REJECTED"
-		fmt.Printf("Rejected by %s on %s with comments:\n%s\n", approverUserName, respondedOn, comments)
+		k.Output.Printf("Rejected by %s on %s with comments:\n%s\n", approverUserName, respondedOn, comments)
 	default:
-		fmt.Printf("ERROR: Unexpected approval status '%s'", approvalStatus)
+		k.Output.Printf("ERROR: Unexpected approval status '%s'", approvalStatus)
 		ferr := writeStatus("FAILED", fmt.Sprintf("Unexpected approval status '%s'", approvalStatus))
 		if ferr != nil {
 			return ferr
@@ -195,30 +217,23 @@ func (k *Config) cancel() error {
 	// Construct request body
 	body := map[string]interface{}{}
 	if cancellationReason == "CANCELLED" {
-		fmt.Println("Workflow aborted by user")
-		fmt.Println("Cancelling the manual approval request")
+		k.Output.Println("Workflow aborted by user")
+		k.Output.Println("Cancelling the manual approval request")
 		body["status"] = "UPDATE_MANUAL_APPROVAL_STATUS_ABORTED"
 	} else {
-		fmt.Println("Workflow timed out")
-		fmt.Println("Workflow approval response was not received within allotted time.")
+		k.Output.Println("Workflow timed out")
+		k.Output.Println("Workflow approval response was not received within allotted time.")
 		body["status"] = "UPDATE_MANUAL_APPROVAL_STATUS_TIMED_OUT"
 	}
 
 	resp, err := k.post("/v1/workflows/approval/status", body)
 	if err != nil {
-		fmt.Printf("ERROR: API call failed with error: '%s'\n", err)
+		k.Output.Printf("ERROR: API call failed with error: '%s'\n", err)
 		return err
 	}
 
 	debugf("Response: '%s'\n", resp)
 	return nil
-}
-
-type RealHttpClient struct{}
-
-func (c *RealHttpClient) Do(req *http.Request) (*http.Response, error) {
-	http.DefaultClient.Timeout = 150 * time.Second
-	return http.DefaultClient.Do(req)
 }
 
 func (k *Config) post(apiPath string, requestBody map[string]interface{}) (string, error) {
@@ -243,7 +258,7 @@ func (k *Config) post(apiPath string, requestBody map[string]interface{}) (strin
 	}
 	debugf("Payload: '%s'\n", string(body))
 
-	// Use default client if it is not already provided in the configuration
+	// Use default http client if it is not already provided in the configuration
 	if k.Client == nil {
 		k.Client = &RealHttpClient{}
 	}

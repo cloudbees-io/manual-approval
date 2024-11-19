@@ -3,9 +3,11 @@ package manual_approval
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"os"
+	"slices"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -19,6 +21,28 @@ var (
 func init() {
 	debug = true
 }
+
+type MockHttpClient struct {
+	MockDo func(req *http.Request) (*http.Response, error)
+}
+
+func (c *MockHttpClient) Do(req *http.Request) (*http.Response, error) {
+	return c.MockDo(req)
+}
+
+type MockStdOut struct {
+	MockPrintf  func(format string, a ...any)
+	MockPrintln func(a ...any)
+}
+
+func (c *MockStdOut) Printf(format string, a ...any) {
+	c.MockPrintf(format, a...)
+}
+
+func (c *MockStdOut) Println(a ...any) {
+	c.MockPrintln(a...)
+}
+
 func Test_defaultConfig(t *testing.T) {
 	tests := []struct {
 		name string
@@ -68,14 +92,6 @@ func Test_defaultConfig(t *testing.T) {
 	}
 }
 
-type MockHttpClient struct {
-	MockDo func(req *http.Request) (*http.Response, error)
-}
-
-func (c *MockHttpClient) Do(req *http.Request) (*http.Response, error) {
-	return c.MockDo(req)
-}
-
 func Test_init(t *testing.T) {
 	tests := []struct {
 		name         string
@@ -83,6 +99,7 @@ func Test_init(t *testing.T) {
 		respGenFunc  func() (*http.Response, error)
 		env          map[string]string
 		client       *MockHttpClient
+		output       []string
 		err          string
 	}{
 		{
@@ -108,6 +125,10 @@ func Test_init(t *testing.T) {
 				"CLOUDBEES_STATUS": "/tmp/test-status-out",
 				"APPROVERS":        "123,user@mail.com",
 				"INSTRUCTIONS":     instructionsInput,
+			},
+			output: []string{
+				"Waiting for approval from one of the following: testUserName\n",
+				"Instructions:\n<p><em><strong>instruction</strong></em>\n<code>instruction2</code></p>\n<h1>instruction3</h1>\n<h2>instruction4</h2>\n<h3>instruction5</h3>\n<blockquote>\n<p>Blockquotes can contain multiple paragraphs</p>\n<p>Add a &gt; on the blank lines between the paragraps.</p>\n</blockquote>\n<ul>\n<li>Rirst item</li>\n<li>Second Item</li>\n<li>Third item\n<ul>\n<li>Indented item</li>\n<li>Indented item</li>\n</ul>\n</li>\n<li>Fourth item</li>\n</ul>\n\n",
 			},
 			err: "",
 		},
@@ -136,10 +157,14 @@ func Test_init(t *testing.T) {
 				"INSTRUCTIONS":              instructionsInput,
 				"DISALLOW_LAUNCHED_BY_USER": "true",
 			},
+			output: []string{
+				"Waiting for approval from one of the following: testUserName\n",
+				"Instructions:\n<p><em><strong>instruction</strong></em>\n<code>instruction2</code></p>\n<h1>instruction3</h1>\n<h2>instruction4</h2>\n<h3>instruction5</h3>\n<blockquote>\n<p>Blockquotes can contain multiple paragraphs</p>\n<p>Add a &gt; on the blank lines between the paragraps.</p>\n</blockquote>\n<ul>\n<li>Rirst item</li>\n<li>Second Item</li>\n<li>Third item\n<ul>\n<li>Indented item</li>\n<li>Indented item</li>\n</ul>\n</li>\n<li>Fourth item</li>\n</ul>\n\n",
+			},
 			err: "",
 		},
 		{
-			name: "success with invalid disallowLaunchedByUser",
+			name: "failure with invalid disallowLaunchedByUser",
 			reqCheckFunc: func(req map[string]interface{}) {
 				require.NotNil(t, req["approvers"])
 				require.Equal(t, []interface{}{"123", "user@mail.com"}, req["approvers"])
@@ -163,7 +188,8 @@ func Test_init(t *testing.T) {
 				"INSTRUCTIONS":              instructionsInput,
 				"DISALLOW_LAUNCHED_BY_USER": "invalid boolean",
 			},
-			err: "strconv.ParseBool: parsing \"invalid boolean\": invalid syntax",
+			output: nil,
+			err:    "strconv.ParseBool: parsing \"invalid boolean\": invalid syntax",
 		},
 		{
 			name: "success with notifyAllEligibleUsers",
@@ -189,6 +215,10 @@ func Test_init(t *testing.T) {
 				"APPROVERS":                 "123,user@mail.com",
 				"INSTRUCTIONS":              instructionsInput,
 				"NOTIFY_ALL_ELIGIBLE_USERS": "true",
+			},
+			output: []string{
+				"Waiting for approval from one of the following: testUserName\n",
+				"Instructions:\n<p><em><strong>instruction</strong></em>\n<code>instruction2</code></p>\n<h1>instruction3</h1>\n<h2>instruction4</h2>\n<h3>instruction5</h3>\n<blockquote>\n<p>Blockquotes can contain multiple paragraphs</p>\n<p>Add a &gt; on the blank lines between the paragraps.</p>\n</blockquote>\n<ul>\n<li>Rirst item</li>\n<li>Second Item</li>\n<li>Third item\n<ul>\n<li>Indented item</li>\n<li>Indented item</li>\n</ul>\n</li>\n<li>Fourth item</li>\n</ul>\n\n",
 			},
 			err: "",
 		},
@@ -217,7 +247,8 @@ func Test_init(t *testing.T) {
 				"INSTRUCTIONS":              instructionsInput,
 				"NOTIFY_ALL_ELIGIBLE_USERS": "invalid boolean",
 			},
-			err: "strconv.ParseBool: parsing \"invalid boolean\": invalid syntax",
+			output: nil,
+			err:    "strconv.ParseBool: parsing \"invalid boolean\": invalid syntax",
 		},
 		{
 			name: "failure",
@@ -243,6 +274,9 @@ func Test_init(t *testing.T) {
 				"APPROVERS":        "123,user@mail.com",
 				"INSTRUCTIONS":     instructionsInput,
 			},
+			output: []string{
+				"ERROR: API call failed with error: 'failed to send event: \nPOST http://test.com/v1/workflows/approval\nHTTP/500 500 Internal Server Error\n'\n",
+			},
 			err: "failed to send event: \nPOST http://test.com/v1/workflows/approval\nHTTP/500 500 Internal Server Error\n",
 		},
 	}
@@ -256,31 +290,45 @@ func Test_init(t *testing.T) {
 				}(k)
 			}
 
+			var testOutput []string
+
 			// Run
-			c := Config{Client: &MockHttpClient{
-				MockDo: func(req *http.Request) (*http.Response, error) {
-					require.NotNil(t, req)
-					require.Equal(t, "POST", req.Method)
-					require.Equal(t, "http://test.com/v1/workflows/approval", req.URL.String())
-					require.Equal(t, "application/json", req.Header.Get("Content-Type"))
-					require.Equal(t, "application/json", req.Header.Get("Accept"))
-					require.Contains(t, req.Header.Get("Authorization"), "Bearer ")
+			c := Config{
+				Client: &MockHttpClient{
+					MockDo: func(req *http.Request) (*http.Response, error) {
+						require.NotNil(t, req)
+						require.Equal(t, "POST", req.Method)
+						require.Equal(t, "http://test.com/v1/workflows/approval", req.URL.String())
+						require.Equal(t, "application/json", req.Header.Get("Content-Type"))
+						require.Equal(t, "application/json", req.Header.Get("Accept"))
+						require.Contains(t, req.Header.Get("Authorization"), "Bearer ")
 
-					reqBody := make(map[string]interface{})
-					bodyReader, err := req.GetBody()
-					require.NoError(t, err)
-					body, err := io.ReadAll(bodyReader)
-					require.NoError(t, err)
-					err = json.Unmarshal(body, &reqBody)
-					require.NoError(t, err)
+						reqBody := make(map[string]interface{})
+						bodyReader, err := req.GetBody()
+						require.NoError(t, err)
+						body, err := io.ReadAll(bodyReader)
+						require.NoError(t, err)
+						err = json.Unmarshal(body, &reqBody)
+						require.NoError(t, err)
 
-					// Check parsed request body
-					tt.reqCheckFunc(reqBody)
+						// Check parsed request body
+						tt.reqCheckFunc(reqBody)
 
-					// Generate response
-					return tt.respGenFunc()
+						// Generate response
+						return tt.respGenFunc()
+					},
 				},
-			}}
+				Output: &MockStdOut{
+					MockPrintf: func(format string, a ...any) {
+						testOutput = append(testOutput, fmt.Sprintf(format, a...))
+						fmt.Printf(format, a...)
+					},
+					MockPrintln: func(a ...any) {
+						testOutput = append(testOutput, fmt.Sprintln(a...))
+						fmt.Println(a...)
+					},
+				},
+			}
 			err := c.init()
 
 			// Verify
@@ -293,6 +341,8 @@ func Test_init(t *testing.T) {
 				require.Error(t, err)
 				require.Equal(t, tt.err, err.Error())
 			}
+
+			require.True(t, slices.Equal(tt.output, testOutput))
 		})
 	}
 }
@@ -305,6 +355,7 @@ func Test_callback(t *testing.T) {
 		env          map[string]string
 		client       *MockHttpClient
 		statusInFile string
+		output       []string
 		err          string
 	}{
 		{
@@ -330,7 +381,10 @@ func Test_callback(t *testing.T) {
 				"PAYLOAD":          "{\"status\":\"UPDATE_MANUAL_APPROVAL_STATUS_APPROVED\",\"comments\":\"test comments\",\"userId\":\"123\",\"userName\":\"testUserName\",\"respondedOn\":\"2009-11-10T23:00:00Z\"}",
 			},
 			statusInFile: "{\"message\":\"Successfully changed workflow manual approval status\",\"status\":\"APPROVED\"}",
-			err:          "",
+			output: []string{
+				"Approved by testUserName on 2009-11-10T23:00:00Z with comments:\ntest comments\n",
+			},
+			err: "",
 		},
 		{
 			name: "success REJECTED",
@@ -355,7 +409,10 @@ func Test_callback(t *testing.T) {
 				"PAYLOAD":          "{\"status\":\"UPDATE_MANUAL_APPROVAL_STATUS_REJECTED\",\"comments\":\"test comments\",\"userId\":\"123\",\"userName\":\"testUserName\",\"respondedOn\":\"2009-11-10T23:00:00Z\"}",
 			},
 			statusInFile: "{\"message\":\"Successfully changed workflow manual approval status\",\"status\":\"REJECTED\"}",
-			err:          "",
+			output: []string{
+				"Rejected by testUserName on 2009-11-10T23:00:00Z with comments:\ntest comments\n",
+			},
+			err: "",
 		},
 		{
 			name: "failure UNSPECIFIED",
@@ -380,7 +437,10 @@ func Test_callback(t *testing.T) {
 				"PAYLOAD":          "{\"status\":\"UPDATE_MANUAL_APPROVAL_STATUS_UNSPECIFIED\",\"comments\":\"test comments\",\"userId\":\"123\",\"userName\":\"testUserName\",\"respondedOn\":\"2009-11-10T23:00:00Z\"}",
 			},
 			statusInFile: "{\"message\":\"Unexpected approval status 'UPDATE_MANUAL_APPROVAL_STATUS_UNSPECIFIED'\",\"status\":\"FAILED\"}",
-			err:          "Unexpected approval status 'UPDATE_MANUAL_APPROVAL_STATUS_UNSPECIFIED'",
+			output: []string{
+				"ERROR: Unexpected approval status 'UPDATE_MANUAL_APPROVAL_STATUS_UNSPECIFIED'",
+			},
+			err: "Unexpected approval status 'UPDATE_MANUAL_APPROVAL_STATUS_UNSPECIFIED'",
 		},
 		{
 			name: "failure",
@@ -405,6 +465,7 @@ func Test_callback(t *testing.T) {
 				"PAYLOAD":          "{\"status\":\"UPDATE_MANUAL_APPROVAL_STATUS_APPROVED\",\"comments\":\"test comments\",\"userId\":\"123\",\"userName\":\"testUserName\",\"respondedOn\":\"2009-11-10T23:00:00Z\"}",
 			},
 			statusInFile: "{\"message\":\"Failed to change workflow manual approval status: 'failed to send event: \\nPOST http://test.com/v1/workflows/approval/status\\nHTTP/500 500 Internal Server Error\\n'\",\"status\":\"FAILED\"}",
+			output:       nil,
 			err:          "failed to send event: \nPOST http://test.com/v1/workflows/approval/status\nHTTP/500 500 Internal Server Error\n",
 		},
 	}
@@ -418,31 +479,45 @@ func Test_callback(t *testing.T) {
 				}(k)
 			}
 
+			var testOutput []string
+
 			// Run
-			c := Config{Client: &MockHttpClient{
-				MockDo: func(req *http.Request) (*http.Response, error) {
-					require.NotNil(t, req)
-					require.Equal(t, "POST", req.Method)
-					require.Equal(t, "http://test.com/v1/workflows/approval/status", req.URL.String())
-					require.Equal(t, "application/json", req.Header.Get("Content-Type"))
-					require.Equal(t, "application/json", req.Header.Get("Accept"))
-					require.Contains(t, req.Header.Get("Authorization"), "Bearer ")
+			c := Config{
+				Client: &MockHttpClient{
+					MockDo: func(req *http.Request) (*http.Response, error) {
+						require.NotNil(t, req)
+						require.Equal(t, "POST", req.Method)
+						require.Equal(t, "http://test.com/v1/workflows/approval/status", req.URL.String())
+						require.Equal(t, "application/json", req.Header.Get("Content-Type"))
+						require.Equal(t, "application/json", req.Header.Get("Accept"))
+						require.Contains(t, req.Header.Get("Authorization"), "Bearer ")
 
-					reqBody := make(map[string]interface{})
-					bodyReader, err := req.GetBody()
-					require.NoError(t, err)
-					body, err := io.ReadAll(bodyReader)
-					require.NoError(t, err)
-					err = json.Unmarshal(body, &reqBody)
-					require.NoError(t, err)
+						reqBody := make(map[string]interface{})
+						bodyReader, err := req.GetBody()
+						require.NoError(t, err)
+						body, err := io.ReadAll(bodyReader)
+						require.NoError(t, err)
+						err = json.Unmarshal(body, &reqBody)
+						require.NoError(t, err)
 
-					// Check parsed request body
-					tt.reqCheckFunc(reqBody)
+						// Check parsed request body
+						tt.reqCheckFunc(reqBody)
 
-					// Generate response
-					return tt.respGenFunc()
+						// Generate response
+						return tt.respGenFunc()
+					},
 				},
-			}}
+				Output: &MockStdOut{
+					MockPrintf: func(format string, a ...any) {
+						testOutput = append(testOutput, fmt.Sprintf(format, a...))
+						fmt.Printf(format, a...)
+					},
+					MockPrintln: func(a ...any) {
+						testOutput = append(testOutput, fmt.Sprintln(a...))
+						fmt.Println(a...)
+					},
+				},
+			}
 			err := c.callback()
 
 			// Verify
@@ -456,6 +531,8 @@ func Test_callback(t *testing.T) {
 			out, ferr := os.ReadFile(tt.env["CLOUDBEES_STATUS"])
 			require.NoError(t, ferr)
 			require.Equal(t, tt.statusInFile, string(out))
+
+			require.True(t, slices.Equal(tt.output, testOutput))
 		})
 	}
 }
@@ -467,6 +544,7 @@ func Test_cancel(t *testing.T) {
 		respGenFunc  func() (*http.Response, error)
 		env          map[string]string
 		client       *MockHttpClient
+		output       []string
 		err          string
 	}{
 		{
@@ -486,6 +564,10 @@ func Test_cancel(t *testing.T) {
 				"URL":                 "http://test.com",
 				"API_TOKEN":           "test",
 				"CANCELLATION_REASON": "CANCELLED",
+			},
+			output: []string{
+				"Workflow aborted by user\n",
+				"Cancelling the manual approval request\n",
 			},
 			err: "",
 		},
@@ -507,6 +589,10 @@ func Test_cancel(t *testing.T) {
 				"API_TOKEN":           "test",
 				"CANCELLATION_REASON": "TIMED_OUT",
 			},
+			output: []string{
+				"Workflow timed out\n",
+				"Workflow approval response was not received within allotted time.\n",
+			},
 			err: "",
 		},
 		{
@@ -527,6 +613,11 @@ func Test_cancel(t *testing.T) {
 				"API_TOKEN":           "test",
 				"CANCELLATION_REASON": "TIMED_OUT",
 			},
+			output: []string{
+				"Workflow timed out\n",
+				"Workflow approval response was not received within allotted time.\n",
+				"ERROR: API call failed with error: 'failed to send event: \nPOST http://test.com/v1/workflows/approval/status\nHTTP/500 500 Internal Server Error\n'\n",
+			},
 			err: "failed to send event: \nPOST http://test.com/v1/workflows/approval/status\nHTTP/500 500 Internal Server Error\n",
 		},
 	}
@@ -540,31 +631,45 @@ func Test_cancel(t *testing.T) {
 				}(k)
 			}
 
+			var testOutput []string
+
 			// Run
-			c := Config{Client: &MockHttpClient{
-				MockDo: func(req *http.Request) (*http.Response, error) {
-					require.NotNil(t, req)
-					require.Equal(t, "POST", req.Method)
-					require.Equal(t, "http://test.com/v1/workflows/approval/status", req.URL.String())
-					require.Equal(t, "application/json", req.Header.Get("Content-Type"))
-					require.Equal(t, "application/json", req.Header.Get("Accept"))
-					require.Contains(t, req.Header.Get("Authorization"), "Bearer ")
+			c := Config{
+				Client: &MockHttpClient{
+					MockDo: func(req *http.Request) (*http.Response, error) {
+						require.NotNil(t, req)
+						require.Equal(t, "POST", req.Method)
+						require.Equal(t, "http://test.com/v1/workflows/approval/status", req.URL.String())
+						require.Equal(t, "application/json", req.Header.Get("Content-Type"))
+						require.Equal(t, "application/json", req.Header.Get("Accept"))
+						require.Contains(t, req.Header.Get("Authorization"), "Bearer ")
 
-					reqBody := make(map[string]interface{})
-					bodyReader, err := req.GetBody()
-					require.NoError(t, err)
-					body, err := io.ReadAll(bodyReader)
-					require.NoError(t, err)
-					err = json.Unmarshal(body, &reqBody)
-					require.NoError(t, err)
+						reqBody := make(map[string]interface{})
+						bodyReader, err := req.GetBody()
+						require.NoError(t, err)
+						body, err := io.ReadAll(bodyReader)
+						require.NoError(t, err)
+						err = json.Unmarshal(body, &reqBody)
+						require.NoError(t, err)
 
-					// Check parsed request body
-					tt.reqCheckFunc(reqBody)
+						// Check parsed request body
+						tt.reqCheckFunc(reqBody)
 
-					// Generate response
-					return tt.respGenFunc()
+						// Generate response
+						return tt.respGenFunc()
+					},
 				},
-			}}
+				Output: &MockStdOut{
+					MockPrintf: func(format string, a ...any) {
+						testOutput = append(testOutput, fmt.Sprintf(format, a...))
+						fmt.Printf(format, a...)
+					},
+					MockPrintln: func(a ...any) {
+						testOutput = append(testOutput, fmt.Sprintln(a...))
+						fmt.Println(a...)
+					},
+				},
+			}
 			err := c.cancel()
 
 			// Verify
@@ -574,6 +679,8 @@ func Test_cancel(t *testing.T) {
 				require.Error(t, err)
 				require.Equal(t, tt.err, err.Error())
 			}
+
+			require.True(t, slices.Equal(tt.output, testOutput))
 		})
 	}
 }
