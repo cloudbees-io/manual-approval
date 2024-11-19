@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func Test_UnknownArguments(t *testing.T) {
+func Test_arguments(t *testing.T) {
 	prevArgs := os.Args
 	defer func() {
 		os.Args = prevArgs
@@ -21,6 +21,16 @@ func Test_UnknownArguments(t *testing.T) {
 		env  map[string]string
 		err  string
 	}{
+		{
+			name: "wrong argument",
+			args: []string{"manual-approval", "wrong"},
+			err:  "unknown arguments: [wrong]",
+		},
+		{
+			name: "wrong flag",
+			args: []string{"manual-approval", "--wrong", "something wrong"},
+			err:  "unknown flag: --wrong",
+		},
 		{
 			name: "wrong handler argument",
 			args: []string{"manual-approval", "--handler", "something wrong"},
@@ -56,7 +66,7 @@ func Test_UnknownArguments(t *testing.T) {
 			err:  "API_TOKEN environment variable missing",
 		},
 		{
-			name: "init - no API_TOKEN environment variable",
+			name: "init - no CLOUDBEES_STATUS environment variable",
 			args: []string{"manual-approval", "--handler", "init"},
 			env:  map[string]string{"URL": "http://test.com", "API_TOKEN": "12345"},
 			err:  "CLOUDBEES_STATUS environment variable missing",

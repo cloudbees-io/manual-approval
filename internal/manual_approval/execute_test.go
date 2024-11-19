@@ -88,40 +88,162 @@ func Test_init(t *testing.T) {
 		{
 			name: "success",
 			reqCheckFunc: func(req map[string]interface{}) {
-				//require.Equal(t, []string{"user1@mail.com", "user2@mail.com"}, req["approvers"].([]string))
-				//require.Equal(t, "some instruction", req["instructions"].(string))
-				require.Nil(t, req["approvers"])
-				require.Nil(t, req["instructions"])
+				require.NotNil(t, req["approvers"])
+				require.Equal(t, []interface{}{"123", "user@mail.com"}, req["approvers"])
+				require.NotNil(t, req["instructions"])
+				require.Equal(t, instructionsInput, req["instructions"].(string))
 				require.Equal(t, false, req["disallowLaunchedByUser"].(bool))
 				require.Equal(t, false, req["notifyAllEligibleUsers"].(bool))
 			},
 			respGenFunc: func() (*http.Response, error) {
 				return &http.Response{
 					StatusCode: 200,
-					Body:       io.NopCloser(bytes.NewBufferString(`{"approvers":[{"userId": "123", "userEmail": "user@mail.com"}]}`)),
+					Status:     "200 OK",
+					Body:       io.NopCloser(bytes.NewBufferString(`{"approvers":[{"userName": "testUserName", "userId": "123", "email": "user@mail.com"}]}`)),
 				}, nil
 			},
-			env: map[string]string{"URL": "http://test.com", "API_TOKEN": "test", "CLOUDBEES_STATUS": "/tmp/test-status-out"},
+			env: map[string]string{
+				"URL":              "http://test.com",
+				"API_TOKEN":        "test",
+				"CLOUDBEES_STATUS": "/tmp/test-status-out",
+				"APPROVERS":        "123,user@mail.com",
+				"INSTRUCTIONS":     instructionsInput,
+			},
 			err: "",
 		},
 		{
-			name: "success with markdown instruction",
+			name: "success with disallowLaunchedByUser",
 			reqCheckFunc: func(req map[string]interface{}) {
-				//require.Equal(t, []string{"user1@mail.com", "user2@mail.com"}, req["approvers"].([]string))
+				require.NotNil(t, req["approvers"])
+				require.Equal(t, []interface{}{"123", "user@mail.com"}, req["approvers"])
 				require.NotNil(t, req["instructions"])
 				require.Equal(t, instructionsInput, req["instructions"].(string))
-				require.Nil(t, req["approvers"])
-				require.Equal(t, false, req["disallowLaunchedByUser"].(bool))
+				require.Equal(t, true, req["disallowLaunchedByUser"].(bool))
 				require.Equal(t, false, req["notifyAllEligibleUsers"].(bool))
 			},
 			respGenFunc: func() (*http.Response, error) {
 				return &http.Response{
 					StatusCode: 200,
-					Body:       io.NopCloser(bytes.NewBufferString(`{"approvers":[{"userId": "123", "userEmail": "user@mail.com"}]}`)),
+					Status:     "200 OK",
+					Body:       io.NopCloser(bytes.NewBufferString(`{"approvers":[{"userName": "testUserName", "userId": "123", "email": "user@mail.com"}]}`)),
 				}, nil
 			},
-			env: map[string]string{"URL": "http://test.com", "API_TOKEN": "test", "CLOUDBEES_STATUS": "/tmp/test-status-out", "INSTRUCTIONS": instructionsInput},
+			env: map[string]string{
+				"URL":                       "http://test.com",
+				"API_TOKEN":                 "test",
+				"CLOUDBEES_STATUS":          "/tmp/test-status-out",
+				"APPROVERS":                 "123,user@mail.com",
+				"INSTRUCTIONS":              instructionsInput,
+				"DISALLOW_LAUNCHED_BY_USER": "true",
+			},
 			err: "",
+		},
+		{
+			name: "success with invalid disallowLaunchedByUser",
+			reqCheckFunc: func(req map[string]interface{}) {
+				require.NotNil(t, req["approvers"])
+				require.Equal(t, []interface{}{"123", "user@mail.com"}, req["approvers"])
+				require.NotNil(t, req["instructions"])
+				require.Equal(t, instructionsInput, req["instructions"].(string))
+				require.Equal(t, true, req["disallowLaunchedByUser"].(bool))
+				require.Equal(t, false, req["notifyAllEligibleUsers"].(bool))
+			},
+			respGenFunc: func() (*http.Response, error) {
+				return &http.Response{
+					StatusCode: 200,
+					Status:     "200 OK",
+					Body:       io.NopCloser(bytes.NewBufferString(`{"approvers":[{"userName": "testUserName", "userId": "123", "email": "user@mail.com"}]}`)),
+				}, nil
+			},
+			env: map[string]string{
+				"URL":                       "http://test.com",
+				"API_TOKEN":                 "test",
+				"CLOUDBEES_STATUS":          "/tmp/test-status-out",
+				"APPROVERS":                 "123,user@mail.com",
+				"INSTRUCTIONS":              instructionsInput,
+				"DISALLOW_LAUNCHED_BY_USER": "invalid boolean",
+			},
+			err: "strconv.ParseBool: parsing \"invalid boolean\": invalid syntax",
+		},
+		{
+			name: "success with notifyAllEligibleUsers",
+			reqCheckFunc: func(req map[string]interface{}) {
+				require.NotNil(t, req["approvers"])
+				require.Equal(t, []interface{}{"123", "user@mail.com"}, req["approvers"])
+				require.NotNil(t, req["instructions"])
+				require.Equal(t, instructionsInput, req["instructions"].(string))
+				require.Equal(t, false, req["disallowLaunchedByUser"].(bool))
+				require.Equal(t, true, req["notifyAllEligibleUsers"].(bool))
+			},
+			respGenFunc: func() (*http.Response, error) {
+				return &http.Response{
+					StatusCode: 200,
+					Status:     "200 OK",
+					Body:       io.NopCloser(bytes.NewBufferString(`{"approvers":[{"userName": "testUserName", "userId": "123", "email": "user@mail.com"}]}`)),
+				}, nil
+			},
+			env: map[string]string{
+				"URL":                       "http://test.com",
+				"API_TOKEN":                 "test",
+				"CLOUDBEES_STATUS":          "/tmp/test-status-out",
+				"APPROVERS":                 "123,user@mail.com",
+				"INSTRUCTIONS":              instructionsInput,
+				"NOTIFY_ALL_ELIGIBLE_USERS": "true",
+			},
+			err: "",
+		},
+		{
+			name: "success with invalid notifyAllEligibleUsers",
+			reqCheckFunc: func(req map[string]interface{}) {
+				require.NotNil(t, req["approvers"])
+				require.Equal(t, []interface{}{"123", "user@mail.com"}, req["approvers"])
+				require.NotNil(t, req["instructions"])
+				require.Equal(t, instructionsInput, req["instructions"].(string))
+				require.Equal(t, false, req["disallowLaunchedByUser"].(bool))
+				require.Equal(t, true, req["notifyAllEligibleUsers"].(bool))
+			},
+			respGenFunc: func() (*http.Response, error) {
+				return &http.Response{
+					StatusCode: 200,
+					Status:     "200 OK",
+					Body:       io.NopCloser(bytes.NewBufferString(`{"approvers":[{"userName": "testUserName", "userId": "123", "email": "user@mail.com"}]}`)),
+				}, nil
+			},
+			env: map[string]string{
+				"URL":                       "http://test.com",
+				"API_TOKEN":                 "test",
+				"CLOUDBEES_STATUS":          "/tmp/test-status-out",
+				"APPROVERS":                 "123,user@mail.com",
+				"INSTRUCTIONS":              instructionsInput,
+				"NOTIFY_ALL_ELIGIBLE_USERS": "invalid boolean",
+			},
+			err: "strconv.ParseBool: parsing \"invalid boolean\": invalid syntax",
+		},
+		{
+			name: "failure",
+			reqCheckFunc: func(req map[string]interface{}) {
+				require.NotNil(t, req["approvers"])
+				require.Equal(t, []interface{}{"123", "user@mail.com"}, req["approvers"])
+				require.NotNil(t, req["instructions"])
+				require.Equal(t, instructionsInput, req["instructions"].(string))
+				require.Equal(t, false, req["disallowLaunchedByUser"].(bool))
+				require.Equal(t, false, req["notifyAllEligibleUsers"].(bool))
+			},
+			respGenFunc: func() (*http.Response, error) {
+				return &http.Response{
+					StatusCode: 500,
+					Status:     "500 Internal Server Error",
+					Body:       io.NopCloser(bytes.NewBufferString(`{"approvers":[{"userName": "testUserName", "userId": "123", "email": "user@mail.com"}]}`)),
+				}, nil
+			},
+			env: map[string]string{
+				"URL":              "http://test.com",
+				"API_TOKEN":        "test",
+				"CLOUDBEES_STATUS": "/tmp/test-status-out",
+				"APPROVERS":        "123,user@mail.com",
+				"INSTRUCTIONS":     instructionsInput,
+			},
+			err: "failed to send event: \nPOST http://test.com/v1/workflows/approval\nHTTP/500 500 Internal Server Error\n",
 		},
 	}
 	for _, tt := range tests {
@@ -167,7 +289,287 @@ func Test_init(t *testing.T) {
 				out, ferr := os.ReadFile(tt.env["CLOUDBEES_STATUS"])
 				require.NoError(t, ferr)
 				require.Equal(t, "{\"message\":\"Waiting for approval from approvers\",\"status\":\"PENDING_APPROVAL\"}", string(out))
+			} else {
+				require.Error(t, err)
+				require.Equal(t, tt.err, err.Error())
+			}
+		})
+	}
+}
 
+func Test_callback(t *testing.T) {
+	tests := []struct {
+		name         string
+		reqCheckFunc func(req map[string]interface{})
+		respGenFunc  func() (*http.Response, error)
+		env          map[string]string
+		client       *MockHttpClient
+		statusInFile string
+		err          string
+	}{
+		{
+			name: "success APPROVED",
+			reqCheckFunc: func(req map[string]interface{}) {
+				require.Equal(t, "UPDATE_MANUAL_APPROVAL_STATUS_APPROVED", req["status"].(string))
+				require.Equal(t, "test comments", req["comments"].(string))
+				require.Equal(t, "123", req["userId"].(string))
+				require.Equal(t, "testUserName", req["userName"].(string))
+				require.Equal(t, "2009-11-10T23:00:00Z", req["respondedOn"].(string))
+			},
+			respGenFunc: func() (*http.Response, error) {
+				return &http.Response{
+					StatusCode: 200,
+					Status:     "200 OK",
+					Body:       io.NopCloser(bytes.NewBufferString(`{}`)),
+				}, nil
+			},
+			env: map[string]string{
+				"URL":              "http://test.com",
+				"API_TOKEN":        "test",
+				"CLOUDBEES_STATUS": "/tmp/test-status-out",
+				"PAYLOAD":          "{\"status\":\"UPDATE_MANUAL_APPROVAL_STATUS_APPROVED\",\"comments\":\"test comments\",\"userId\":\"123\",\"userName\":\"testUserName\",\"respondedOn\":\"2009-11-10T23:00:00Z\"}",
+			},
+			statusInFile: "{\"message\":\"Successfully changed workflow manual approval status\",\"status\":\"APPROVED\"}",
+			err:          "",
+		},
+		{
+			name: "success REJECTED",
+			reqCheckFunc: func(req map[string]interface{}) {
+				require.Equal(t, "UPDATE_MANUAL_APPROVAL_STATUS_REJECTED", req["status"].(string))
+				require.Equal(t, "test comments", req["comments"].(string))
+				require.Equal(t, "123", req["userId"].(string))
+				require.Equal(t, "testUserName", req["userName"].(string))
+				require.Equal(t, "2009-11-10T23:00:00Z", req["respondedOn"].(string))
+			},
+			respGenFunc: func() (*http.Response, error) {
+				return &http.Response{
+					StatusCode: 200,
+					Status:     "200 OK",
+					Body:       io.NopCloser(bytes.NewBufferString(`{}`)),
+				}, nil
+			},
+			env: map[string]string{
+				"URL":              "http://test.com",
+				"API_TOKEN":        "test",
+				"CLOUDBEES_STATUS": "/tmp/test-status-out",
+				"PAYLOAD":          "{\"status\":\"UPDATE_MANUAL_APPROVAL_STATUS_REJECTED\",\"comments\":\"test comments\",\"userId\":\"123\",\"userName\":\"testUserName\",\"respondedOn\":\"2009-11-10T23:00:00Z\"}",
+			},
+			statusInFile: "{\"message\":\"Successfully changed workflow manual approval status\",\"status\":\"REJECTED\"}",
+			err:          "",
+		},
+		{
+			name: "failure UNSPECIFIED",
+			reqCheckFunc: func(req map[string]interface{}) {
+				require.Equal(t, "UPDATE_MANUAL_APPROVAL_STATUS_UNSPECIFIED", req["status"].(string))
+				require.Equal(t, "test comments", req["comments"].(string))
+				require.Equal(t, "123", req["userId"].(string))
+				require.Equal(t, "testUserName", req["userName"].(string))
+				require.Equal(t, "2009-11-10T23:00:00Z", req["respondedOn"].(string))
+			},
+			respGenFunc: func() (*http.Response, error) {
+				return &http.Response{
+					StatusCode: 200,
+					Status:     "200 OK",
+					Body:       io.NopCloser(bytes.NewBufferString(`{}`)),
+				}, nil
+			},
+			env: map[string]string{
+				"URL":              "http://test.com",
+				"API_TOKEN":        "test",
+				"CLOUDBEES_STATUS": "/tmp/test-status-out",
+				"PAYLOAD":          "{\"status\":\"UPDATE_MANUAL_APPROVAL_STATUS_UNSPECIFIED\",\"comments\":\"test comments\",\"userId\":\"123\",\"userName\":\"testUserName\",\"respondedOn\":\"2009-11-10T23:00:00Z\"}",
+			},
+			statusInFile: "{\"message\":\"Unexpected approval status 'UPDATE_MANUAL_APPROVAL_STATUS_UNSPECIFIED'\",\"status\":\"FAILED\"}",
+			err:          "Unexpected approval status 'UPDATE_MANUAL_APPROVAL_STATUS_UNSPECIFIED'",
+		},
+		{
+			name: "failure",
+			reqCheckFunc: func(req map[string]interface{}) {
+				require.Equal(t, "UPDATE_MANUAL_APPROVAL_STATUS_APPROVED", req["status"].(string))
+				require.Equal(t, "test comments", req["comments"].(string))
+				require.Equal(t, "123", req["userId"].(string))
+				require.Equal(t, "testUserName", req["userName"].(string))
+				require.Equal(t, "2009-11-10T23:00:00Z", req["respondedOn"].(string))
+			},
+			respGenFunc: func() (*http.Response, error) {
+				return &http.Response{
+					StatusCode: 500,
+					Status:     "500 Internal Server Error",
+					Body:       io.NopCloser(bytes.NewBufferString(`{}`)),
+				}, nil
+			},
+			env: map[string]string{
+				"URL":              "http://test.com",
+				"API_TOKEN":        "test",
+				"CLOUDBEES_STATUS": "/tmp/test-status-out",
+				"PAYLOAD":          "{\"status\":\"UPDATE_MANUAL_APPROVAL_STATUS_APPROVED\",\"comments\":\"test comments\",\"userId\":\"123\",\"userName\":\"testUserName\",\"respondedOn\":\"2009-11-10T23:00:00Z\"}",
+			},
+			statusInFile: "{\"message\":\"Failed to change workflow manual approval status: 'failed to send event: \\nPOST http://test.com/v1/workflows/approval/status\\nHTTP/500 500 Internal Server Error\\n'\",\"status\":\"FAILED\"}",
+			err:          "failed to send event: \nPOST http://test.com/v1/workflows/approval/status\nHTTP/500 500 Internal Server Error\n",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Prepare
+			for k, v := range tt.env {
+				os.Setenv(k, v)
+				defer func(k string) {
+					os.Unsetenv(k)
+				}(k)
+			}
+
+			// Run
+			c := Config{Client: &MockHttpClient{
+				MockDo: func(req *http.Request) (*http.Response, error) {
+					require.NotNil(t, req)
+					require.Equal(t, "POST", req.Method)
+					require.Equal(t, "http://test.com/v1/workflows/approval/status", req.URL.String())
+					require.Equal(t, "application/json", req.Header.Get("Content-Type"))
+					require.Equal(t, "application/json", req.Header.Get("Accept"))
+					require.Contains(t, req.Header.Get("Authorization"), "Bearer ")
+
+					reqBody := make(map[string]interface{})
+					bodyReader, err := req.GetBody()
+					require.NoError(t, err)
+					body, err := io.ReadAll(bodyReader)
+					require.NoError(t, err)
+					err = json.Unmarshal(body, &reqBody)
+					require.NoError(t, err)
+
+					// Check parsed request body
+					tt.reqCheckFunc(reqBody)
+
+					// Generate response
+					return tt.respGenFunc()
+				},
+			}}
+			err := c.callback()
+
+			// Verify
+			if tt.err == "" {
+				require.NoError(t, err)
+			} else {
+				require.Error(t, err)
+				require.Equal(t, tt.err, err.Error())
+			}
+
+			out, ferr := os.ReadFile(tt.env["CLOUDBEES_STATUS"])
+			require.NoError(t, ferr)
+			require.Equal(t, tt.statusInFile, string(out))
+		})
+	}
+}
+
+func Test_cancel(t *testing.T) {
+	tests := []struct {
+		name         string
+		reqCheckFunc func(req map[string]interface{})
+		respGenFunc  func() (*http.Response, error)
+		env          map[string]string
+		client       *MockHttpClient
+		err          string
+	}{
+		{
+			name: "success CANCELLED",
+			reqCheckFunc: func(req map[string]interface{}) {
+				require.NotNil(t, req["status"])
+				require.Equal(t, "UPDATE_MANUAL_APPROVAL_STATUS_ABORTED", req["status"].(string))
+			},
+			respGenFunc: func() (*http.Response, error) {
+				return &http.Response{
+					StatusCode: 200,
+					Status:     "200 OK",
+					Body:       io.NopCloser(bytes.NewBufferString(`{}`)),
+				}, nil
+			},
+			env: map[string]string{
+				"URL":                 "http://test.com",
+				"API_TOKEN":           "test",
+				"CANCELLATION_REASON": "CANCELLED",
+			},
+			err: "",
+		},
+		{
+			name: "success TIMED_OUT",
+			reqCheckFunc: func(req map[string]interface{}) {
+				require.NotNil(t, req["status"])
+				require.Equal(t, "UPDATE_MANUAL_APPROVAL_STATUS_TIMED_OUT", req["status"].(string))
+			},
+			respGenFunc: func() (*http.Response, error) {
+				return &http.Response{
+					StatusCode: 200,
+					Status:     "200 OK",
+					Body:       io.NopCloser(bytes.NewBufferString(`{}`)),
+				}, nil
+			},
+			env: map[string]string{
+				"URL":                 "http://test.com",
+				"API_TOKEN":           "test",
+				"CANCELLATION_REASON": "TIMED_OUT",
+			},
+			err: "",
+		},
+		{
+			name: "failure",
+			reqCheckFunc: func(req map[string]interface{}) {
+				require.NotNil(t, req["status"])
+				require.Equal(t, "UPDATE_MANUAL_APPROVAL_STATUS_TIMED_OUT", req["status"].(string))
+			},
+			respGenFunc: func() (*http.Response, error) {
+				return &http.Response{
+					StatusCode: 500,
+					Status:     "500 Internal Server Error",
+					Body:       io.NopCloser(bytes.NewBufferString(`{}`)),
+				}, nil
+			},
+			env: map[string]string{
+				"URL":                 "http://test.com",
+				"API_TOKEN":           "test",
+				"CANCELLATION_REASON": "TIMED_OUT",
+			},
+			err: "failed to send event: \nPOST http://test.com/v1/workflows/approval/status\nHTTP/500 500 Internal Server Error\n",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Prepare
+			for k, v := range tt.env {
+				os.Setenv(k, v)
+				defer func(k string) {
+					os.Unsetenv(k)
+				}(k)
+			}
+
+			// Run
+			c := Config{Client: &MockHttpClient{
+				MockDo: func(req *http.Request) (*http.Response, error) {
+					require.NotNil(t, req)
+					require.Equal(t, "POST", req.Method)
+					require.Equal(t, "http://test.com/v1/workflows/approval/status", req.URL.String())
+					require.Equal(t, "application/json", req.Header.Get("Content-Type"))
+					require.Equal(t, "application/json", req.Header.Get("Accept"))
+					require.Contains(t, req.Header.Get("Authorization"), "Bearer ")
+
+					reqBody := make(map[string]interface{})
+					bodyReader, err := req.GetBody()
+					require.NoError(t, err)
+					body, err := io.ReadAll(bodyReader)
+					require.NoError(t, err)
+					err = json.Unmarshal(body, &reqBody)
+					require.NoError(t, err)
+
+					// Check parsed request body
+					tt.reqCheckFunc(reqBody)
+
+					// Generate response
+					return tt.respGenFunc()
+				},
+			}}
+			err := c.cancel()
+
+			// Verify
+			if tt.err == "" {
+				require.NoError(t, err)
 			} else {
 				require.Error(t, err)
 				require.Equal(t, tt.err, err.Error())
