@@ -62,15 +62,6 @@ func (k *Config) init() error {
 	// instructions are optional
 	instructions := os.Getenv("INSTRUCTIONS")
 
-	// Add markdown format support to instructions
-	var buf bytes.Buffer
-	md := goldmark.New()
-	if err := md.Convert([]byte(instructions), &buf); err != nil {
-		fmt.Printf("Failed to convert instruction markdown to html: %v\n", err)
-	} else {
-		instructions = buf.String()
-	}
-
 	// by default disallowLaunchedByUser is false
 	disallowLaunchedByUserStr := os.Getenv("DISALLOW_LAUNCHED_BY_USER")
 	if disallowLaunchedByUserStr == "" {
@@ -129,7 +120,7 @@ func (k *Config) init() error {
 
 	fmt.Printf("Waiting for approval from one of the following: %s\n", strings.Join(users, ","))
 	if instructions != "" {
-		fmt.Printf("Instructions:\n%s\n", instructions)
+		fmt.Printf("Instructions:\n%s\n", markdown(instructions))
 	}
 
 	return writeStatus("PENDING_APPROVAL", "Waiting for approval from approvers")
@@ -316,4 +307,17 @@ func writeStatus(status string, message string) error {
 		return fmt.Errorf("failed to write to %s: %w", statusFile, err)
 	}
 	return nil
+}
+
+// Add markdown format support to instructions
+func markdown(value string) string {
+	var buf bytes.Buffer
+	md := goldmark.New()
+	if err := md.Convert([]byte(value), &buf); err != nil {
+		fmt.Printf("Failed to convert markdown to html: %v\n", err)
+	} else {
+		value = buf.String()
+	}
+
+	return value
 }

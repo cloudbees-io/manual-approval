@@ -109,7 +109,7 @@ func Test_init(t *testing.T) {
 			reqCheckFunc: func(req map[string]interface{}) {
 				//require.Equal(t, []string{"user1@mail.com", "user2@mail.com"}, req["approvers"].([]string))
 				require.NotNil(t, req["instructions"])
-				require.Equal(t, instructionsOutput, req["instructions"].(string))
+				require.Equal(t, instructionsInput, req["instructions"].(string))
 				require.Nil(t, req["approvers"])
 				require.Equal(t, false, req["disallowLaunchedByUser"].(bool))
 				require.Equal(t, false, req["notifyAllEligibleUsers"].(bool))
@@ -172,6 +172,29 @@ func Test_init(t *testing.T) {
 				require.Error(t, err)
 				require.Equal(t, tt.err, err.Error())
 			}
+		})
+	}
+}
+
+func Test_markdown(t *testing.T) {
+	tests := []struct {
+		name   string
+		input  string
+		output string
+	}{
+		{
+			name:   "Markdown",
+			input:  instructionsInput,
+			output: instructionsOutput,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Run
+			result := markdown(tt.input)
+
+			// Verify
+			require.Equal(t, tt.output, result)
 		})
 	}
 }
