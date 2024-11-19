@@ -94,8 +94,6 @@ jobs:
         destination: index.docker.io/${{ vars.TEMP_MANUAL_APPROVAL_DOCKER_USER }}/manual-approval-test:${{ cloudbees.scm.sha }}
         labels: maintainer=cbp-cd-ro-team,email=engineering@cloudbees.io
         registry-mirrors: 020229604682.dkr.ecr.us-east-1.amazonaws.com/docker-hub
-        verbosity: debug
-        tar-path: ${{ cloudbees.home }}/image.tar
 
     - name: Check test image
       uses: docker://alpine:3.18
@@ -114,11 +112,3 @@ jobs:
              
 #         regctl image inspect 020229604682.dkr.ecr.us-east-1.amazonaws.com/custom-jobs/manual-approval-test:${{ cloudbees.scm.sha }}
          regctl image inspect index.docker.io/${{ vars.TEMP_MANUAL_APPROVAL_DOCKER_USER }}/manual-approval-test:${{ cloudbees.scm.sha }}
-
-        if stat "${{ cloudbees.home }}/image.tar"; then
-          echo "Tar file exists."
-        else
-          echo "Tar file does not exist."
-          exit 1
-        fi
-
