@@ -86,11 +86,11 @@ jobs:
         username: ${{ vars.TEMP_MANUAL_APPROVAL_DOCKER_USER }}
         password: ${{ secrets.TEMP_MANUAL_APPROVAL_DOCKER_PASSWORD }}
 
-# destination: 020229604682.dkr.ecr.us-east-1.amazonaws.com/custom-jobs/manual-approval-test:${{ cloudbees.scm.sha }}
     - name: Build test image
       id: build-test-image
       uses: cloudbees-io/kaniko@v1
       with:
+        # destination: 020229604682.dkr.ecr.us-east-1.amazonaws.com/custom-jobs/manual-approval-test:${{ cloudbees.scm.sha }}
         destination: index.docker.io/${{ vars.TEMP_MANUAL_APPROVAL_DOCKER_USER }}/manual-approval-test:${{ cloudbees.scm.sha }}
         labels: maintainer=cbp-cd-ro-team,email=engineering@cloudbees.io
         registry-mirrors: 020229604682.dkr.ecr.us-east-1.amazonaws.com/docker-hub
@@ -103,12 +103,12 @@ jobs:
         chmod 755 /usr/local/bin/regctl
 
         EXPECTED=${{ steps.build-test-image.outputs.digest }}
-#        ACTUAL=`regctl image digest 020229604682.dkr.ecr.us-east-1.amazonaws.com/custom-jobs/manual-approval-test:${{ cloudbees.scm.sha }}`
+        # ACTUAL=`regctl image digest 020229604682.dkr.ecr.us-east-1.amazonaws.com/custom-jobs/manual-approval-test:${{ cloudbees.scm.sha }}`
         ACTUAL=`regctl image digest index.docker.io/${{ vars.TEMP_MANUAL_APPROVAL_DOCKER_USER }}/manual-approval-test:${{ cloudbees.scm.sha }}`
         if [ "$EXPECTED" != "$ACTUAL" ]; then
           echo "expected $EXPECTED, but got $ACTUAL"
           exit 1
         fi
              
-#         regctl image inspect 020229604682.dkr.ecr.us-east-1.amazonaws.com/custom-jobs/manual-approval-test:${{ cloudbees.scm.sha }}
+        # regctl image inspect 020229604682.dkr.ecr.us-east-1.amazonaws.com/custom-jobs/manual-approval-test:${{ cloudbees.scm.sha }}
         regctl image inspect index.docker.io/${{ vars.TEMP_MANUAL_APPROVAL_DOCKER_USER }}/manual-approval-test:${{ cloudbees.scm.sha }}
