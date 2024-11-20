@@ -50,7 +50,7 @@ jobs:
     - name: Run TruffleHog Container Action
       uses: cloudbees-io/trufflehog-secret-scan-container@v1
       with:
-        image-location: index.docker.io/${{ vars.TEMP_MANUAL_APPROVAL_DOCKER_USER }}/manual-approval
+        image-location: 020229604682.dkr.ecr.us-east-1.amazonaws.com/custom-jobs/manual-approval
         image-tag: ${{ cloudbees.scm.sha }}
 
     - name: Check image
