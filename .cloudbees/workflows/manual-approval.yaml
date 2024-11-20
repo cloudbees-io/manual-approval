@@ -17,15 +17,6 @@ jobs:
     - name: Get source code
       uses: cloudbees-io/checkout@v1
 
-    - name: Validate custom-job
-      uses: docker://amazon/aws-cli:2.12.6
-      run: |
-        CURRENT_SHA=$(cat ./custom-job.yml | sha1sum)
-        ORIGINAL_SHA=$(sed -e 's|docker://public.ecr.aws/l7o7z1g8/custom-jobs/|docker://020229604682.dkr.ecr.us-east-1.amazonaws.com/custom-jobs/|g' < custom-job.yml | sha1sum)
-        if [ "${TESTING_SHA}" != "${CURRENT_SHA}" ]; then
-          echo "Original custom-job different from current custom-job"
-        fi
-
     - name: Unit tests
       uses: docker://golang:1.23
       run: |
