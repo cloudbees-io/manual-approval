@@ -63,7 +63,7 @@ jobs:
         image-location: index.docker.io/${{ vars.TEMP_MANUAL_APPROVAL_DOCKER_USER }}/manual-approval
         image-tag: ${{ cloudbees.scm.sha }}
 
-    - name: Check test image
+    - name: Check image
       uses: docker://alpine:3.18
       run: |
         apk add -U --no-cache curl ca-certificates
