@@ -3,6 +3,9 @@ kind: workflow
 name: manual-approval
 
 on:
+  push:
+    branches:
+      - '**'
   workflow_dispatch:
 
 permissions:
@@ -14,53 +17,33 @@ jobs:
     - name: Get source code
       uses: cloudbees-io/checkout@v1
 
-#    - name: Validate custom-job
-#      uses: docker://amazon/aws-cli:2.12.6
-#      run: |
-#        TESTING_SHA=$(cat .cloudbees/testing/custom-job.yml | sha1sum)
-#        ORIGINAL_SHA=$(sed -e 's|docker://public.ecr.aws/l7o7z1g8/custom-jobs/|docker://020229604682.dkr.ecr.us-east-1.amazonaws.com/custom-jobs/|g' < custom-job.yml | sha1sum)
-#        if [ "${TESTING_SHA}" != "${ORIGINAL_SHA}" ]; then
-#          echo "Original custom-job different from testing custom-job"
-#          exit 1
-#        fi
-
     - name: Unit tests
       uses: docker://golang:1.23
       run: |
         go test --cover ./...
 
-# US: Don't have permissions to create ECR registry. Switched to personal DockerHub registry for the spike
-#    - name: Login to AWS
-#      uses: cloudbees-io/configure-aws-credentials@v1
-#      with:
-#        aws-region: us-east-1
-#        role-to-assume: ${{ vars.oidc_staging_iam_role }}
-#        role-duration-seconds: "3600"
-#
-#    - name: Configure container registry for ECR
-#      uses: cloudbees-io/configure-ecr-credentials@v1
-
-    - name: Set up Docker Hub registry
-      uses: cloudbees-io/configure-oci-credentials@v1
+    - name: Login to AWS
+      uses: cloudbees-io/configure-aws-credentials@v1
       with:
-        registry: index.docker.io # or docker.io
-        username: ${{ vars.TEMP_MANUAL_APPROVAL_DOCKER_USER }}
-        password: ${{ secrets.TEMP_MANUAL_APPROVAL_DOCKER_PASSWORD }}
+        aws-region: us-east-1
+        role-to-assume: ${{ vars.oidc_staging_iam_role }}
+        role-duration-seconds: "3600"
 
-# Don't have permissions to create ECR registry. Switched to personal DockerHub registry for the spike
-# 020229604682.dkr.ecr.us-east-1.amazonaws.com/custom-jobs/manual-approval ->  index.docker.io/${{ vars.TEMP_MANUAL_APPROVAL_DOCKER_USER }}/manual-approval
+    - name: Configure container registry for ECR
+      uses: cloudbees-io/configure-ecr-credentials@v1
+
     - name: Build image
       id: build-image
       uses: cloudbees-io/kaniko@v1
       with:
-        destination: index.docker.io/${{ vars.TEMP_MANUAL_APPROVAL_DOCKER_USER }}/manual-approval:${{ cloudbees.scm.sha }},index.docker.io/${{ vars.TEMP_MANUAL_APPROVAL_DOCKER_USER }}/manual-approval:latest
+        destination: 020229604682.dkr.ecr.us-east-1.amazonaws.com/custom-jobs/manual-approval:${{ cloudbees.scm.sha }},020229604682.dkr.ecr.us-east-1.amazonaws.com/custom-jobs/manual-approval:latest
         labels: maintainer=cbp-cd-ro-team,email=engineering@cloudbees.io
         registry-mirrors: 020229604682.dkr.ecr.us-east-1.amazonaws.com/docker-hub
 
     - name: Run TruffleHog Container Action
       uses: cloudbees-io/trufflehog-secret-scan-container@v1
       with:
-        image-location: index.docker.io/${{ vars.TEMP_MANUAL_APPROVAL_DOCKER_USER }}/manual-approval
+        image-location: 020229604682.dkr.ecr.us-east-1.amazonaws.com/custom-jobs/manual-approval
         image-tag: ${{ cloudbees.scm.sha }}
 
     - name: Check image
@@ -71,12 +54,10 @@ jobs:
         chmod 755 /usr/local/bin/regctl
         
         EXPECTED=${{ steps.build-image.outputs.digest }}
-        # ACTUAL=`regctl image digest 020229604682.dkr.ecr.us-east-1.amazonaws.com/custom-jobs/manual-approval:${{ cloudbees.scm.sha }}`
-        ACTUAL=`regctl image digest index.docker.io/${{ vars.TEMP_MANUAL_APPROVAL_DOCKER_USER }}/manual-approval:${{ cloudbees.scm.sha }}`
+        ACTUAL=`regctl image digest 020229604682.dkr.ecr.us-east-1.amazonaws.com/custom-jobs/manual-approval:${{ cloudbees.scm.sha }}`
         if [ "$EXPECTED" != "$ACTUAL" ]; then
           echo "expected $EXPECTED, but got $ACTUAL"
           exit 1
         fi
         
-        # regctl image inspect 020229604682.dkr.ecr.us-east-1.amazonaws.com/custom-jobs/manual-approval:${{ cloudbees.scm.sha }}
-        regctl image inspect index.docker.io/${{ vars.TEMP_MANUAL_APPROVAL_DOCKER_USER }}/manual-approval:${{ cloudbees.scm.sha }}
+        regctl image inspect 020229604682.dkr.ecr.us-east-1.amazonaws.com/custom-jobs/manual-approval:${{ cloudbees.scm.sha }}
