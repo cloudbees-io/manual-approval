@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -104,6 +105,9 @@ func (k *Config) init() error {
 		return err
 	}
 
+	// get approvalInputs if configured for the manual approval job
+	inputs := os.Getenv("INPUTS")
+
 	// Construct request body
 	body := map[string]interface{}{
 		"disallowLaunchedByUser": disallowLaunchedByUser,
@@ -116,6 +120,10 @@ func (k *Config) init() error {
 
 	if instructions != "" {
 		body["instructions"] = instructions
+	}
+
+	if inputs != "" {
+		body["inputs"] = inputs
 	}
 
 	resp, err := k.post("/v1/workflows/approval", body)
@@ -203,6 +211,7 @@ func (k *Config) callback() error {
 		return fmt.Errorf("Unexpected approval status '%s'", approvalStatus)
 	}
 
+	writeAsOutput("approvalInputs", map[string]string{"param1": "val1", "param2": "val2"})
 	return writeStatus(jobStatus, "Successfully changed workflow manual approval status")
 }
 
@@ -301,6 +310,24 @@ func debugf(format string, a ...any) {
 		t := time.Now()
 		fmt.Printf("%s - DEBUG: "+format, append([]any{t.Format(time.RFC3339)}, a...)...)
 	}
+}
+
+func writeAsOutput(name string, value map[string]string) error {
+	outputsDir := os.Getenv("CLOUDBEES_OUTPUTS")
+	if outputsDir == "" {
+		return fmt.Errorf("CLOUDBEES_OUTPUTS environment variable missing")
+	}
+
+	outputBytes, err := json.Marshal(&value)
+	if err != nil {
+		return err
+	}
+	outputFile := filepath.Join(outputsDir, name)
+	err = os.WriteFile(outputFile, outputBytes, 0666)
+	if err != nil {
+		return fmt.Errorf("failed to write to %s: %w", outputFile, err)
+	}
+	return nil
 }
 
 func writeStatus(status string, message string) error {
