@@ -26,9 +26,12 @@ inputs:
     default: false
     required: false
 outputs:
-  approvalInputs:
+  approvalInputValues:
     description: Input parameter values provided by the user when approving or rejecting the manual approval request.
-    value: ${{ handlers.callback.outputs.approvalInputs }}
+    value: ${{ handlers.callback.outputs.approvalInputValues }}
+  comments:
+    description: The approver's comments
+    value: ${{ handlers.callback.outputs.comments }}
 handlers:
   init:
     uses: docker://020229604682.dkr.ecr.us-east-1.amazonaws.com/custom-jobs/manual-approval:latest

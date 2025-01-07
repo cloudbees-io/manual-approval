@@ -26,9 +26,12 @@ inputs:
     default: false
     required: false
 outputs:
-  approvalInputs:
+  approvalInputValues:
     description: Input parameter values provided by the user when approving or rejecting the manual approval request.
-    value: ${{ handlers.callback.outputs.approvalInputs }}
+    value: ${{ handlers.callback.outputs.approvalInputValues }}
+  comments:
+    description: The approver's comments
+    value: ${{ handlers.callback.outputs.comments }}
 handlers:
   init:
     uses: docker://public.ecr.aws/l7o7z1g8/custom-jobs/manual-approval:e079e5690d1b2631db337817486d463a8f56f46e

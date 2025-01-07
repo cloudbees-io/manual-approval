@@ -211,7 +211,19 @@ func (k *Config) callback() error {
 		return fmt.Errorf("Unexpected approval status '%s'", approvalStatus)
 	}
 
-	writeAsOutput("approvalInputs", map[string]string{"param1": "val1", "param2": "val2"})
+	//TODO: temporarily hard-coded input parameter values
+	outputBytes, err := json.Marshal(map[string]string{"param1": "val1", "param2": "val2"})
+	if err != nil {
+		return err
+	}
+	err = writeAsOutput("approvalInputValues", outputBytes)
+	if err != nil {
+		return err
+	}
+	err = writeAsOutput("comments", []byte(comments))
+	if err != nil {
+		return err
+	}
 	return writeStatus(jobStatus, "Successfully changed workflow manual approval status")
 }
 
@@ -312,18 +324,14 @@ func debugf(format string, a ...any) {
 	}
 }
 
-func writeAsOutput(name string, value map[string]string) error {
+func writeAsOutput(name string, value []byte) error {
 	outputsDir := os.Getenv("CLOUDBEES_OUTPUTS")
 	if outputsDir == "" {
 		return fmt.Errorf("CLOUDBEES_OUTPUTS environment variable missing")
 	}
 
-	outputBytes, err := json.Marshal(&value)
-	if err != nil {
-		return err
-	}
 	outputFile := filepath.Join(outputsDir, name)
-	err = os.WriteFile(outputFile, outputBytes, 0666)
+	err := os.WriteFile(outputFile, value, 0755)
 	if err != nil {
 		return fmt.Errorf("failed to write to %s: %w", outputFile, err)
 	}
