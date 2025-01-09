@@ -19,7 +19,7 @@ inputs:
     default: false
     required: false
   approvalInputs:
-    description: Inputs to be provided by the user when approving or rejecting the manual approval request.
+    description: Inputs to be provided by the user when approving the manual approval request.
     required: false
   debug:
     description: Set to true to enable debug logging.
@@ -27,7 +27,7 @@ inputs:
     required: false
 outputs:
   approvalInputValues:
-    description: Input parameter values provided by the user when approving or rejecting the manual approval request.
+    description: Input parameter values provided by the user when approving the manual approval request.
     value: ${{ handlers.callback.outputs.approvalInputValues }}
   comments:
     description: The approver's comments
