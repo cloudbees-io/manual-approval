@@ -486,6 +486,9 @@ func Test_callback(t *testing.T) {
 			outputs_dir, exists := tt.env["CLOUDBEES_OUTPUTS"]
 			if exists {
 				os.Mkdir(outputs_dir, 0755)
+				defer func(dir string) {
+					os.RemoveAll(dir)
+				}(outputs_dir)
 			}
 
 			var testOutput []string
@@ -532,12 +535,14 @@ func Test_callback(t *testing.T) {
 			// Verify
 			if tt.err == "" {
 				require.NoError(t, err)
-				out, ferr := os.ReadFile(tt.env["CLOUDBEES_OUTPUTS"] + "/comments")
-				require.NoError(t, ferr)
-				require.Equal(t, tt.commentsInOutput, string(out))
 			} else {
 				require.Error(t, err)
 				require.Equal(t, tt.err, err.Error())
+			}
+			if tt.commentsInOutput != "" {
+				out, ferr := os.ReadFile(tt.env["CLOUDBEES_OUTPUTS"] + "/comments")
+				require.NoError(t, ferr)
+				require.Equal(t, tt.commentsInOutput, string(out))
 			}
 
 			out, ferr := os.ReadFile(tt.env["CLOUDBEES_STATUS"])

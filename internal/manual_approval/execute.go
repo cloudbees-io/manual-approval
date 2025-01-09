@@ -212,14 +212,17 @@ func (k *Config) callback() error {
 	}
 
 	//TODO: temporarily hard-coded input parameter values
-	outputBytes, err := json.Marshal(map[string]string{"param1": "val1", "param2": "val2"})
-	if err != nil {
-		return err
+	if debug {
+		outputBytes, err := json.Marshal(map[string]string{"param1": "val1", "param2": "val2"})
+		if err != nil {
+			return err
+		}
+		err = writeAsOutput("approvalInputValues", outputBytes)
+		if err != nil {
+			return err
+		}
 	}
-	err = writeAsOutput("approvalInputValues", outputBytes)
-	if err != nil {
-		return err
-	}
+
 	err = writeAsOutput("comments", []byte(comments))
 	if err != nil {
 		return err
