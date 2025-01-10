@@ -108,6 +108,9 @@ func (k *Config) init() error {
 	// get approvalInputs if configured for the manual approval job
 	inputs := os.Getenv("INPUTS")
 
+	// Get all env variables to debug issue with missed input parameters
+	fmt.Println(os.Environ())
+
 	// Construct request body
 	body := map[string]interface{}{
 		"disallowLaunchedByUser": disallowLaunchedByUser,
