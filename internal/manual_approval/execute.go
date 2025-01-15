@@ -217,7 +217,7 @@ func (k *Config) callback() error {
 	}
 	outputData := string(outputBytes)
 	if outputData != "null" && outputData != "[]" {
-		err = writeAsOutput("inputValues", outputBytes)
+		err = writeAsOutput("approvalInputValues", outputBytes)
 		if err != nil {
 			return err
 		}

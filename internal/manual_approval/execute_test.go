@@ -577,7 +577,7 @@ func Test_callback(t *testing.T) {
 				require.NoError(t, ferr)
 				require.Equal(t, tt.commentsInOutput, string(out))
 			}
-			out, ferr := os.ReadFile(tt.env["CLOUDBEES_OUTPUTS"] + "/inputValues")
+			out, ferr := os.ReadFile(tt.env["CLOUDBEES_OUTPUTS"] + "/approvalInputValues")
 			if tt.inputValsInOutput != "" {
 				require.NoError(t, ferr)
 				require.Equal(t, tt.inputValsInOutput, string(out))
