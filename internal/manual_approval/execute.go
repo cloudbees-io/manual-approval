@@ -372,6 +372,5 @@ func markdown(value string) string {
 	} else {
 		value = buf.String()
 	}
-
 	return value
 }
