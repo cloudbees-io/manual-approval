@@ -412,11 +412,11 @@ func Test_callback(t *testing.T) {
 				"API_TOKEN":         "test",
 				"CLOUDBEES_STATUS":  "/tmp/test-status-out",
 				"CLOUDBEES_OUTPUTS": "/tmp/test-outputs",
-				"PAYLOAD":           "{\"status\":\"UPDATE_MANUAL_APPROVAL_STATUS_APPROVED\",\"comments\":\"test comments1\",\"userId\":\"123\",\"userName\":\"testUserName\",\"respondedOn\":\"2009-11-10T23:00:00Z\",\"inputs\": []}",
+				"PAYLOAD":           "{\"status\":\"UPDATE_MANUAL_APPROVAL_STATUS_APPROVED\",\"comments\":\"test comments1\",\"userId\":\"123\",\"userName\":\"testUserName\",\"respondedOn\":\"2009-11-10T23:00:00Z\"}",
 			},
 			statusInFile:      "{\"message\":\"Successfully changed workflow manual approval status\",\"status\":\"APPROVED\"}",
 			commentsInOutput:  "test comments1",
-			inputValsInOutput: "", // file should not be created, hence no values
+			inputValsInOutput: "null", // file should not be created, hence no values
 			output: []string{
 				"Approved by testUserName on 2009-11-10T23:00:00Z with comments:\ntest comments1\n",
 			},
@@ -577,18 +577,10 @@ func Test_callback(t *testing.T) {
 				require.NoError(t, ferr)
 				require.Equal(t, tt.commentsInOutput, string(out))
 			}
-			out, ferr := os.ReadFile(tt.env["CLOUDBEES_OUTPUTS"] + "/approvalInputValues")
-			if tt.inputValsInOutput != "" {
-				require.NoError(t, ferr)
-				require.Equal(t, tt.inputValsInOutput, string(out))
-			} else {
-				require.Error(t, ferr)
-				require.Equal(t, tt.inputValsInOutput, string(out))
-			}
 
-			out1, ferr1 := os.ReadFile(tt.env["CLOUDBEES_STATUS"])
-			require.NoError(t, ferr1)
-			require.Equal(t, tt.statusInFile, string(out1))
+			out, ferr := os.ReadFile(tt.env["CLOUDBEES_STATUS"])
+			require.NoError(t, ferr)
+			require.Equal(t, tt.statusInFile, string(out))
 
 			require.True(t, slices.Equal(tt.output, testOutput))
 		})

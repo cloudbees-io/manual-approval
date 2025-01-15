@@ -215,14 +215,11 @@ func (k *Config) callback() error {
 	if err != nil {
 		return err
 	}
-	outputData := string(outputBytes)
-	//if outputData != "null" && outputData != "[]" {
 	err = writeAsOutput("approvalInputValues", outputBytes)
 	if err != nil {
 		return err
 	}
-	//}
-	debugf("Approval Input Values: '%s'\n", outputData)
+	debugf("Approval Input Values: '%s'\n", string(outputBytes))
 
 	err = writeAsOutput("comments", []byte(comments))
 	if err != nil {
