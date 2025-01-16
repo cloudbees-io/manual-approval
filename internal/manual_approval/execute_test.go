@@ -388,6 +388,10 @@ func Test_callback(t *testing.T) {
 			inputValsInOutput: "[{\"is_default\":false,\"name\":\"reqBoolInput\",\"value\":true},{\"is_default\":false,\"name\":\"reqStrInput\",\"value\":\"strValue\"},{\"is_default\":false,\"name\":\"reqNumInput\",\"value\":99.33}]",
 			output: []string{
 				"Approved by testUserName on 2009-11-10T23:00:00Z with comments:\ntest comments1\n",
+				"<p><strong>Input Parameters:</strong></p>\n\n",
+				"<p><strong>Name:</strong></p>\n%s <p><strong>Value:</strong></p>\n%v <p><strong>IsDefault:</strong></p>\n%v\n reqBoolInput true false\n",
+				"<p><strong>Name:</strong></p>\n%s <p><strong>Value:</strong></p>\n%v <p><strong>IsDefault:</strong></p>\n%v\n reqStrInput strValue false\n",
+				"<p><strong>Name:</strong></p>\n%s <p><strong>Value:</strong></p>\n%v <p><strong>IsDefault:</strong></p>\n%v\n reqNumInput 99.33 false\n",
 			},
 			err: "",
 		},
@@ -419,6 +423,7 @@ func Test_callback(t *testing.T) {
 			inputValsInOutput: "null", // file should not be created, hence no values
 			output: []string{
 				"Approved by testUserName on 2009-11-10T23:00:00Z with comments:\ntest comments1\n",
+				"<p><strong>No Parameters Defined</strong></p>\n\n",
 			},
 			err: "",
 		},
@@ -449,6 +454,7 @@ func Test_callback(t *testing.T) {
 			commentsInOutput: "test comments2",
 			output: []string{
 				"Rejected by testUserName on 2009-11-10T23:00:00Z with comments:\ntest comments2\n",
+				"<p><strong>No Parameters Defined</strong></p>\n\n",
 			},
 			err: "",
 		},
@@ -476,7 +482,7 @@ func Test_callback(t *testing.T) {
 			},
 			statusInFile: "{\"message\":\"Unexpected approval status 'UPDATE_MANUAL_APPROVAL_STATUS_UNSPECIFIED'\",\"status\":\"FAILED\"}",
 			output: []string{
-				"ERROR: Unexpected approval status 'UPDATE_MANUAL_APPROVAL_STATUS_UNSPECIFIED'",
+				"ERROR: Unexpected approval status 'UPDATE_MANUAL_APPROVAL_STATUS_UNSPECIFIED'\n",
 			},
 			err: "Unexpected approval status 'UPDATE_MANUAL_APPROVAL_STATUS_UNSPECIFIED'",
 		},
