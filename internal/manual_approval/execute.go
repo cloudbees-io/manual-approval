@@ -217,11 +217,13 @@ func (k *Config) callback() error {
 	}
 	outputData := string(outputBytes)
 	if outputData != "null" && outputData != "[]" {
-		k.Output.Println(markdown("\n**Input Parameters:**\n"))
+		k.Output.Printf("\n###Input Parameters:\n")
 		inputs := parsedPayload["inputs"].([]interface{})
+		k.Output.Printf("| Name          | Value            | Is Default       |\n")
+		k.Output.Printf("| --------------| -----------------| -----------------|\n")
 		for _, input := range inputs {
 			ip := input.(map[string]interface{})
-			k.Output.Println(markdown("**Name:**")+"%s", markdown("**Value:**")+"%v", markdown("**IsDefault:**")+"%v\n",
+			k.Output.Printf("| **%s** | %v | %v |\n",
 				ip["name"], ip["value"], ip["is_default"])
 		}
 	} else {
