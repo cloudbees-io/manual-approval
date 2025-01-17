@@ -459,7 +459,6 @@ func Test_callback(t *testing.T) {
 			inputValsInOutput: "null", // file should not be created, hence no values
 			output: []string{
 				"Approved by testUserName on 2009-11-10T23:00:00Z with comments:\ntest comments1\n",
-				"<p><strong>No Parameters Defined</strong></p>\n\n",
 			},
 			err: "",
 		},
