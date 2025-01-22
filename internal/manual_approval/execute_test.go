@@ -612,11 +612,13 @@ func Test_callback(t *testing.T) {
 				require.Error(t, err)
 				require.Equal(t, tt.err, err.Error())
 			}
+
 			if tt.inputValsInOutput != "" {
 				out, ferr := os.ReadFile(tt.env["CLOUDBEES_OUTPUTS"] + "/approvalInputValues")
 				require.NoError(t, ferr)
 				require.Equal(t, tt.inputValsInOutput, string(out))
 			}
+
 			if tt.commentsInOutput != "" {
 				out, ferr := os.ReadFile(tt.env["CLOUDBEES_OUTPUTS"] + "/comments")
 				require.NoError(t, ferr)
