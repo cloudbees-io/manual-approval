@@ -306,6 +306,7 @@ func (k *Config) post(apiPath string, requestBody map[string]interface{}) (strin
 
 	// Construct the request URL for the API call
 	requestURL, err := url.JoinPath(apiUrl, apiPath)
+	debugf("Request URL: '%s'\n", requestURL)
 	if err != nil {
 		return "", err
 	}
