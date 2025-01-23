@@ -452,11 +452,11 @@ func Test_callback(t *testing.T) {
 				"API_TOKEN":         "test",
 				"CLOUDBEES_STATUS":  "/tmp/test-status-out",
 				"CLOUDBEES_OUTPUTS": "/tmp/test-outputs",
-				"PAYLOAD":           "{\"status\":\"UPDATE_MANUAL_APPROVAL_STATUS_APPROVED\",\"comments\":\"test comments1\",\"userId\":\"123\",\"userName\":\"testUserName\",\"respondedOn\":\"2009-11-10T23:00:00Z\"}",
+				"PAYLOAD":           "{\"status\":\"UPDATE_MANUAL_APPROVAL_STATUS_APPROVED\",\"comments\":\"test comments1\",\"userId\":\"123\",\"userName\":\"testUserName\",\"respondedOn\":\"2009-11-10T23:00:00Z\", \"inputs\":[]}",
 			},
 			statusInFile:      "{\"message\":\"Successfully changed workflow manual approval status\",\"status\":\"APPROVED\"}",
 			commentsInOutput:  "test comments1",
-			inputValsInOutput: "null", // file should not be created, hence no values
+			inputValsInOutput: "null",
 			output: []string{
 				"Approved by testUserName on 2009-11-10T23:00:00Z with comments:\ntest comments1\n",
 			},
@@ -485,8 +485,9 @@ func Test_callback(t *testing.T) {
 				"CLOUDBEES_OUTPUTS": "/tmp/test-outputs",
 				"PAYLOAD":           "{\"status\":\"UPDATE_MANUAL_APPROVAL_STATUS_REJECTED\",\"comments\":\"test comments2\",\"userId\":\"123\",\"userName\":\"testUserName\",\"respondedOn\":\"2009-11-10T23:00:00Z\"}",
 			},
-			statusInFile:     "{\"message\":\"Successfully changed workflow manual approval status\",\"status\":\"REJECTED\"}",
-			commentsInOutput: "test comments2",
+			statusInFile:      "{\"message\":\"Successfully changed workflow manual approval status\",\"status\":\"REJECTED\"}",
+			commentsInOutput:  "test comments2",
+			inputValsInOutput: "null",
 			output: []string{
 				"Rejected by testUserName on 2009-11-10T23:00:00Z with comments:\ntest comments2\n",
 			},
@@ -512,7 +513,7 @@ func Test_callback(t *testing.T) {
 				"URL":              "http://test.com",
 				"API_TOKEN":        "test",
 				"CLOUDBEES_STATUS": "/tmp/test-status-out",
-				"PAYLOAD":          "{\"status\":\"UPDATE_MANUAL_APPROVAL_STATUS_UNSPECIFIED\",\"comments\":\"test comments\",\"userId\":\"123\",\"userName\":\"testUserName\",\"respondedOn\":\"2009-11-10T23:00:00Z\"}",
+				"PAYLOAD":          "{\"status\":\"UPDATE_MANUAL_APPROVAL_STATUS_UNSPECIFIED\",\"comments\":\"test comments\",\"userId\":\"123\",\"userName\":\"testUserName\",\"respondedOn\":\"2009-11-10T23:00:00Z\",\"inputs\":null}",
 			},
 			statusInFile: "{\"message\":\"Unexpected approval status 'UPDATE_MANUAL_APPROVAL_STATUS_UNSPECIFIED'\",\"status\":\"FAILED\"}",
 			output: []string{
