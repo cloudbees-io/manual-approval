@@ -201,7 +201,6 @@ func (k *Config) callback() error {
 			fmt.Println("Error unmarshalling copied payload:", err)
 			return err
 		}
-		debugf("originalParsedPayload: '%v'\n", originalParsedPayload)
 
 		modifiedInputsForPost = parsedPayload["inputs"].([]interface{})
 		for _, input := range modifiedInputsForPost {
@@ -210,7 +209,12 @@ func (k *Config) callback() error {
 			ip["value"] = inputVal
 		}
 		parsedPayload["inputs"] = modifiedInputsForPost
-		debugf("Inputs for post request: '%s'\n", parsedPayload["inputs"].([]interface{}))
+		updtVal, err2 := json.Marshal(parsedPayload)
+		if err2 != nil {
+			fmt.Println("Invalid payload after converting input values to string:", err2)
+			return err2
+		}
+		debugf("Inputs for post request: '%s'\n", updtVal)
 	} else {
 		debugf("**No Input Parameters Defined**\n")
 	}
@@ -239,7 +243,7 @@ func (k *Config) callback() error {
 
 func (k *Config) writeLogAndOutputs(modifiedInputsForPost []interface{}, originalParsedPayload map[string]interface{}, comments string) error {
 	if len(modifiedInputsForPost) > 0 {
-		k.Output.Printf("\n### Input Parameters:\n")
+		k.Output.Printf("\nInput Parameters:\n")
 		k.Output.Printf("| Name          | Value            |\n")
 		k.Output.Printf("| --------------| -----------------|\n")
 		suffix := " (default)"
@@ -250,7 +254,7 @@ func (k *Config) writeLogAndOutputs(modifiedInputsForPost []interface{}, origina
 				inputaVal += suffix
 			}
 
-			k.Output.Printf("| **%s** | %s |\n",
+			k.Output.Printf("| %s | %s |\n",
 				ip["name"], inputaVal)
 		}
 	}
