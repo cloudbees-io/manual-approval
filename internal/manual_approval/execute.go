@@ -267,7 +267,6 @@ func (k *Config) writeLogAndOutputs(modifiedInputsForPost []interface{}, origina
 	if err != nil {
 		return err
 	}
-
 	debugf("Approval Input Values: '%s'\n", string(outputBytes))
 
 	err = writeAsOutput("comments", []byte(comments))
