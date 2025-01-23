@@ -185,8 +185,9 @@ func (k *Config) callback() error {
 	debugf("Approver user name: '%s'\n", approverUserName)
 
 	var originalParsedPayload map[string]interface{}
-	var modifiedInputsForPost []interface{}
 	var originalParsedPayloadJSON []byte
+	modifiedInputsForPost := parsedPayload["inputs"].([]interface{})
+	outputsMap := make(map[string]interface{})
 
 	if parsedPayload["inputs"] != nil && len(parsedPayload["inputs"].([]interface{})) > 0 {
 		// Creating a deep copy of parsedPayload
@@ -202,13 +203,16 @@ func (k *Config) callback() error {
 			return err
 		}
 
-		modifiedInputsForPost = parsedPayload["inputs"].([]interface{})
 		for _, input := range modifiedInputsForPost {
 			ip := input.(map[string]interface{})
+			// To print input param values in original type to outputs
+			outputsMap[ip["name"].(string)] = ip["value"]
+			// Converting param value to string type for POST request
 			inputVal := interfaceToString(ip["value"])
 			ip["value"] = inputVal
 		}
 		parsedPayload["inputs"] = modifiedInputsForPost
+
 		updtVal, err2 := json.Marshal(parsedPayload)
 		if err2 != nil {
 			fmt.Println("Invalid payload after converting input values to string:", err2)
@@ -234,14 +238,14 @@ func (k *Config) callback() error {
 		return err2
 	}
 
-	err3 := k.writeLogAndOutputs(modifiedInputsForPost, originalParsedPayload, comments)
+	err3 := k.writeLogAndOutputs(modifiedInputsForPost, outputsMap, originalParsedPayload, comments)
 	if err3 != nil {
 		return err3
 	}
 	return writeStatus(jobStatus, "Successfully changed workflow manual approval status")
 }
 
-func (k *Config) writeLogAndOutputs(modifiedInputsForPost []interface{}, originalParsedPayload map[string]interface{}, comments string) error {
+func (k *Config) writeLogAndOutputs(modifiedInputsForPost []interface{}, outputsMap map[string]interface{}, originalParsedPayload map[string]interface{}, comments string) error {
 	if len(modifiedInputsForPost) > 0 {
 		k.Output.Printf("\nInput Parameters:\n")
 		k.Output.Printf("| Name          | Value            |\n")
@@ -261,8 +265,8 @@ func (k *Config) writeLogAndOutputs(modifiedInputsForPost []interface{}, origina
 
 	outputBytes := []byte("null")
 	var err error
-	if originalParsedPayload != nil {
-		outputBytes, err = json.Marshal(originalParsedPayload["inputs"])
+	if outputsMap != nil {
+		outputBytes, err = json.Marshal(outputsMap)
 		if err != nil {
 			return err
 		}
