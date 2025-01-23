@@ -230,14 +230,14 @@ func (k *Config) callback() error {
 		return err2
 	}
 
-	err3 := k.writeLogAndOutputs(modifiedInputsForPost, originalParsedPayload, err, comments)
+	err3 := k.writeLogAndOutputs(modifiedInputsForPost, originalParsedPayload, comments)
 	if err3 != nil {
 		return err3
 	}
 	return writeStatus(jobStatus, "Successfully changed workflow manual approval status")
 }
 
-func (k *Config) writeLogAndOutputs(modifiedInputsForPost []interface{}, originalParsedPayload map[string]interface{}, err error, comments string) error {
+func (k *Config) writeLogAndOutputs(modifiedInputsForPost []interface{}, originalParsedPayload map[string]interface{}, comments string) error {
 	if len(modifiedInputsForPost) > 0 {
 		k.Output.Printf("\n### Input Parameters:\n")
 		k.Output.Printf("| Name          | Value            |\n")
@@ -256,6 +256,7 @@ func (k *Config) writeLogAndOutputs(modifiedInputsForPost []interface{}, origina
 	}
 
 	outputBytes := []byte("null")
+	var err error
 	if originalParsedPayload != nil {
 		outputBytes, err = json.Marshal(originalParsedPayload["inputs"])
 		if err != nil {
