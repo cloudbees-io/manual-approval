@@ -184,45 +184,11 @@ func (k *Config) callback() error {
 	approverUserName := parsedPayload["userName"].(string)
 	debugf("Approver user name: '%s'\n", approverUserName)
 
-	var originalParsedPayload map[string]interface{}
-	var originalParsedPayloadJSON []byte
-	var modifiedInputsForPost []interface{}
-	outputsMap := make(map[string]interface{})
-
-	if parsedPayload["inputs"] != nil && len(parsedPayload["inputs"].([]interface{})) > 0 {
-
-		modifiedInputsForPost = parsedPayload["inputs"].([]interface{})
-		// Creating a deep copy of parsedPayload
-		originalParsedPayloadJSON, err = json.Marshal(parsedPayload)
-		if err != nil {
-			fmt.Println("Error marshalling original payload while creating a copy:", err)
-			return err
-		}
-
-		err = json.Unmarshal(originalParsedPayloadJSON, &originalParsedPayload)
-		if err != nil {
-			fmt.Println("Error unmarshalling copied payload:", err)
-			return err
-		}
-
-		for _, input := range modifiedInputsForPost {
-			ip := input.(map[string]interface{})
-			// To print input param values in original type to outputs
-			outputsMap[ip["name"].(string)] = ip["value"]
-			// Converting param value to string type for POST request
-			inputVal := interfaceToString(ip["value"])
-			ip["value"] = inputVal
-		}
-		parsedPayload["inputs"] = modifiedInputsForPost
-
-		updtVal, err2 := json.Marshal(parsedPayload)
-		if err2 != nil {
-			fmt.Println("Invalid payload after converting input values to string:", err2)
-			return err2
-		}
-		debugf("Inputs for post request: '%s'\n", updtVal)
-	} else {
-		debugf("**No Input Parameters Defined**\n")
+	// POST request expects input param values to be strings, so converting values to string
+	// Also, creating a map with input values in original type to be made available in outputs
+	modifiedInputsParamForPost, outputsMap, err4 := formatInputsForPost(parsedPayload)
+	if err4 != nil {
+		return err4
 	}
 
 	_, err = k.post("/v1/workflows/approval/status", parsedPayload)
@@ -240,30 +206,55 @@ func (k *Config) callback() error {
 		return err2
 	}
 
-	err3 := k.writeLogAndOutputs(modifiedInputsForPost, outputsMap, originalParsedPayload, comments)
+	// Add suffix for default vals and write to log
+	k.formatInputsValsAndWriteToLog(modifiedInputsParamForPost)
+
+	//
+	err3 := k.writeToOutputs(outputsMap, comments)
 	if err3 != nil {
 		return err3
 	}
+
 	return writeStatus(jobStatus, "Successfully changed workflow manual approval status")
 }
 
-func (k *Config) writeLogAndOutputs(modifiedInputsForPost []interface{}, outputsMap map[string]interface{}, originalParsedPayload map[string]interface{}, comments string) error {
-	if len(modifiedInputsForPost) > 0 {
-		k.Output.Printf("\nInput Parameters:\n")
-		k.Output.Printf("| Name          | Value            |\n")
-		k.Output.Printf("| --------------| -----------------|\n")
-		suffix := " (default)"
-		for _, input := range modifiedInputsForPost {
-			ip := input.(map[string]interface{})
-			inputaVal := ip["value"].(string)
-			if ip["is_default"] == true {
-				inputaVal += suffix
-			}
+/*
+* POST request expects input param values to be strings, so converting values
+* to string Also, creating a map with input values in original type to be made
+* available in outputs
+ */
+func formatInputsForPost(parsedPayload map[string]interface{}) ([]interface{}, map[string]interface{}, error) {
+	var modifiedInputsParamForPost []interface{}
+	outputsMap := make(map[string]interface{})
 
-			k.Output.Printf("| %s | %s |\n",
-				ip["name"], inputaVal)
+	if parsedPayload["inputs"] != nil && len(parsedPayload["inputs"].([]interface{})) > 0 {
+
+		modifiedInputsParamForPost = parsedPayload["inputs"].([]interface{})
+
+		for _, input := range modifiedInputsParamForPost {
+			ip := input.(map[string]interface{})
+			// To print input param values in original type to outputs
+			outputsMap[ip["name"].(string)] = ip["value"]
+			// Converting param value to string type for POST request
+			inputVal := interfaceToString(ip["value"])
+			ip["value"] = inputVal
 		}
+		parsedPayload["inputs"] = modifiedInputsParamForPost
+
+		updtVal, err2 := json.Marshal(parsedPayload)
+		if err2 != nil {
+			fmt.Println("Invalid payload after converting input values to string:", err2)
+			return nil, nil, err2
+		}
+		debugf("Inputs for post request: '%s'\n", updtVal)
+	} else {
+		debugf("**No Input Parameters Defined**\n")
 	}
+
+	return modifiedInputsParamForPost, outputsMap, nil
+}
+
+func (k *Config) writeToOutputs(outputsMap map[string]interface{}, comments string) error {
 
 	if outputsMap != nil {
 		outputBytes, err := json.Marshal(outputsMap)
@@ -282,6 +273,26 @@ func (k *Config) writeLogAndOutputs(modifiedInputsForPost []interface{}, outputs
 		return err
 	}
 	return nil
+}
+
+// Add suffix if input param value is default value before writing it to callback handler logs
+func (k *Config) formatInputsValsAndWriteToLog(modifiedInputsParamForPost []interface{}) {
+	if len(modifiedInputsParamForPost) > 0 {
+		k.Output.Printf("\nInput Parameters:\n")
+		k.Output.Printf("| Name          | Value            |\n")
+		k.Output.Printf("| --------------| -----------------|\n")
+		suffix := " (default)"
+		for _, input := range modifiedInputsParamForPost {
+			ip := input.(map[string]interface{})
+			inputaVal := ip["value"].(string)
+			if ip["is_default"] == true {
+				inputaVal += suffix
+			}
+
+			k.Output.Printf("| %s | %s |\n",
+				ip["name"], inputaVal)
+		}
+	}
 }
 
 func (k *Config) processApprovalStatus(approvalStatus string, approverUserName string, respondedOn string, comments string) (string, error) {
