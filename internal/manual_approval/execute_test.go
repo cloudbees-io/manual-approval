@@ -456,7 +456,7 @@ func Test_callback(t *testing.T) {
 			},
 			statusInFile:      "{\"message\":\"Successfully changed workflow manual approval status\",\"status\":\"APPROVED\"}",
 			commentsInOutput:  "test comments1",
-			inputValsInOutput: "null",
+			inputValsInOutput: "{}",
 			output: []string{
 				"Approved by testUserName on 2009-11-10T23:00:00Z with comments:\ntest comments1\n",
 			},
@@ -487,7 +487,7 @@ func Test_callback(t *testing.T) {
 			},
 			statusInFile:      "{\"message\":\"Successfully changed workflow manual approval status\",\"status\":\"REJECTED\"}",
 			commentsInOutput:  "test comments2",
-			inputValsInOutput: "null",
+			inputValsInOutput: "{}",
 			output: []string{
 				"Rejected by testUserName on 2009-11-10T23:00:00Z with comments:\ntest comments2\n",
 			},

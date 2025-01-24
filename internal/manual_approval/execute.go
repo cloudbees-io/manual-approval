@@ -186,10 +186,12 @@ func (k *Config) callback() error {
 
 	var originalParsedPayload map[string]interface{}
 	var originalParsedPayloadJSON []byte
-	modifiedInputsForPost := parsedPayload["inputs"].([]interface{})
+	var modifiedInputsForPost []interface{}
 	outputsMap := make(map[string]interface{})
 
 	if parsedPayload["inputs"] != nil && len(parsedPayload["inputs"].([]interface{})) > 0 {
+
+		modifiedInputsForPost = parsedPayload["inputs"].([]interface{})
 		// Creating a deep copy of parsedPayload
 		originalParsedPayloadJSON, err = json.Marshal(parsedPayload)
 		if err != nil {
@@ -263,21 +265,19 @@ func (k *Config) writeLogAndOutputs(modifiedInputsForPost []interface{}, outputs
 		}
 	}
 
-	outputBytes := []byte("null")
-	var err error
 	if outputsMap != nil {
-		outputBytes, err = json.Marshal(outputsMap)
+		outputBytes, err := json.Marshal(outputsMap)
 		if err != nil {
 			return err
 		}
+		err = writeAsOutput("approvalInputValues", outputBytes)
+		if err != nil {
+			return err
+		}
+		debugf("Approval Input Values in outputs: '%s'\n", string(outputBytes))
 	}
-	err = writeAsOutput("approvalInputValues", outputBytes)
-	if err != nil {
-		return err
-	}
-	debugf("Approval Input Values: '%s'\n", string(outputBytes))
 
-	err = writeAsOutput("comments", []byte(comments))
+	err := writeAsOutput("comments", []byte(comments))
 	if err != nil {
 		return err
 	}
