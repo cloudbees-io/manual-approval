@@ -419,7 +419,7 @@ func Test_callback(t *testing.T) {
 			},
 			statusInFile:      "{\"message\":\"Successfully changed workflow manual approval status\",\"status\":\"APPROVED\"}",
 			commentsInOutput:  "test comments1",
-			inputValsInOutput: "[{\"is_default\":true,\"name\":\"reqBoolInput\",\"value\":true},{\"is_default\":true,\"name\":\"reqStrInput\",\"value\":\"strValue\"},{\"is_default\":false,\"name\":\"reqNumInput\",\"value\":99.33}]",
+			inputValsInOutput: "{\"reqBoolInput\":true,\"reqNumInput\":99.33,\"reqStrInput\":\"strValue\"}",
 			output: []string{
 				"Approved by testUserName on 2009-11-10T23:00:00Z with comments:\ntest comments1\n",
 				"\n### Input Parameters:\n",
@@ -456,7 +456,7 @@ func Test_callback(t *testing.T) {
 			},
 			statusInFile:      "{\"message\":\"Successfully changed workflow manual approval status\",\"status\":\"APPROVED\"}",
 			commentsInOutput:  "test comments1",
-			inputValsInOutput: "null", // file should not be created, hence no values
+			inputValsInOutput: "",
 			output: []string{
 				"Approved by testUserName on 2009-11-10T23:00:00Z with comments:\ntest comments1\n",
 			},

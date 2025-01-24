@@ -222,6 +222,7 @@ func (k *Config) callback() error {
 		k.Output.Printf("| Name          | Value            |\n")
 		k.Output.Printf("| --------------| -----------------|\n")
 		suffix := " (default)"
+		outputParameters := map[string]interface{}{}
 		for _, input := range inputs {
 			ip := input.(map[string]interface{})
 			inputaVal := interfaceToString(ip["value"])
@@ -231,14 +232,21 @@ func (k *Config) callback() error {
 
 			k.Output.Printf("| **%s** | %s |\n",
 				ip["name"], inputaVal)
+
+			outputParameters[ip["name"].(string)] = ip["value"]
+		}
+
+		outputParametersJSON, err := json.Marshal(outputParameters)
+		if err != nil {
+			return err
+		}
+
+		err = writeAsOutput("approvalInputValues", outputParametersJSON)
+		if err != nil {
+			return err
 		}
 	} else {
 		debugf("**No Parameters Defined**")
-	}
-
-	err = writeAsOutput("approvalInputValues", outputBytes)
-	if err != nil {
-		return err
 	}
 
 	debugf("Approval Input Values: '%s'\n", outputData)
