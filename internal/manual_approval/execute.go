@@ -279,22 +279,7 @@ func (k *Config) writeToOutputs(outputsMap map[string]interface{}, comments stri
 func (k *Config) formatInputsValsAndWriteToLog(modifiedInputsParamForPost []interface{}) {
 	if len(modifiedInputsParamForPost) > 0 {
 		k.Output.Printf("\nInput Parameters:\n")
-
-		// Table start
-		tableHTML := "<table style=\"border: 1px solid black; border-collapse: collapse; padding: 10px;\">" +
-			"<tr>" +
-			"<th style=\"border: 1px solid black; padding: 10px; text-align: left; vertical-align: middle; font-weight: bold;\">Name</th>" +
-			"<th style=\"border: 1px solid black; padding: 10px; text-align: left; vertical-align: middle; font-weight: bold;\">Value</th>" +
-			"</tr>"
-
-		// Row template
-		rowTemplate := "<tr>" +
-			"<td style=\"border: 1px solid black; padding: 10px; text-align: left; vertical-align: middle;\">%s</td>" +
-			"<td style=\"border: 1px solid black; padding: 10px; text-align: left; vertical-align: middle;\">%s</td>" +
-			"</tr>"
-
-		// Generate rows
-		var rowsHTML strings.Builder
+		k.Output.Printf("------------------\n")
 		suffix := " (default)"
 		for _, input := range modifiedInputsParamForPost {
 			ip := input.(map[string]interface{})
@@ -304,13 +289,9 @@ func (k *Config) formatInputsValsAndWriteToLog(modifiedInputsParamForPost []inte
 				inputaVal += suffix
 			}
 
-			rowsHTML.WriteString(fmt.Sprintf(rowTemplate, ip["name"], inputaVal))
+			k.Output.Printf(" %s: %s \n",
+				ip["name"], inputaVal)
 		}
-
-		// Table end
-		tableHTML += rowsHTML.String() + "</table>"
-
-		k.Output.Printf(tableHTML)
 	}
 }
 

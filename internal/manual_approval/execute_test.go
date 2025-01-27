@@ -423,7 +423,10 @@ func Test_callback(t *testing.T) {
 			output: []string{
 				"Approved by testUserName on 2009-11-10T23:00:00Z with comments:\ntest comments1\n",
 				"\nInput Parameters:\n",
-				"<table style=\"border: 1px solid black; border-collapse: collapse; padding: 10px;\"><tr><th style=\"border: 1px solid black; padding: 10px; text-align: left; vertical-align: middle; font-weight: bold;\">Name</th><th style=\"border: 1px solid black; padding: 10px; text-align: left; vertical-align: middle; font-weight: bold;\">Value</th></tr><tr><td style=\"border: 1px solid black; padding: 10px; text-align: left; vertical-align: middle;\">reqBoolInput</td><td style=\"border: 1px solid black; padding: 10px; text-align: left; vertical-align: middle;\">true (default)</td></tr><tr><td style=\"border: 1px solid black; padding: 10px; text-align: left; vertical-align: middle;\">reqStrInput</td><td style=\"border: 1px solid black; padding: 10px; text-align: left; vertical-align: middle;\">Streamline Workflows, Speed Up Software Delivery, and Enable Continuous Improvement.<br/>CloudBees empowers developers by reducing time spent on non-coding tasks with self-service automation pipelines, speeding up software delivery with advanced CI/CD capabilities, and fostering innovation through feature management and real-time feedback loops. (default)</td></tr><tr><td style=\"border: 1px solid black; padding: 10px; text-align: left; vertical-align: middle;\">reqNumInput</td><td style=\"border: 1px solid black; padding: 10px; text-align: left; vertical-align: middle;\">99.33</td></tr></table>",
+				"------------------\n",
+				" reqBoolInput: true (default) \n",
+				" reqStrInput: Streamline Workflows, Speed Up Software Delivery, and Enable Continuous Improvement.<br/>CloudBees empowers developers by reducing time spent on non-coding tasks with self-service automation pipelines, speeding up software delivery with advanced CI/CD capabilities, and fostering innovation through feature management and real-time feedback loops. (default) \n",
+				" reqNumInput: 99.33 \n",
 			},
 			err: "",
 		},
