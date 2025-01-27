@@ -284,7 +284,7 @@ func (k *Config) formatInputsValsAndWriteToLog(modifiedInputsParamForPost []inte
 		for _, input := range modifiedInputsParamForPost {
 			ip := input.(map[string]interface{})
 			inputVal := ip["value"].(string)
-			inputVal = strings.Replace(inputVal, "\n", "<br/>", -1)
+			inputVal = strings.Replace(inputVal, "\n", "<br/>", -1) // replace /n with <br> for html rendering
 			if ip["is_default"] == true {
 				inputVal += suffix
 			}
