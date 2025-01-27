@@ -299,6 +299,7 @@ func (k *Config) formatInputsValsAndWriteToLog(modifiedInputsParamForPost []inte
 		for _, input := range modifiedInputsParamForPost {
 			ip := input.(map[string]interface{})
 			inputaVal := ip["value"].(string)
+			inputaVal = strings.Replace(inputaVal, "\n", "<br/>", -1)
 			if ip["is_default"] == true {
 				inputaVal += suffix
 			}
