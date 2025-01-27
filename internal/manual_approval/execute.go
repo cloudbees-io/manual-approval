@@ -283,14 +283,14 @@ func (k *Config) formatInputsValsAndWriteToLog(modifiedInputsParamForPost []inte
 		suffix := " (default)"
 		for _, input := range modifiedInputsParamForPost {
 			ip := input.(map[string]interface{})
-			inputaVal := ip["value"].(string)
-			inputaVal = strings.Replace(inputaVal, "\n", "<br/>", -1)
+			inputVal := ip["value"].(string)
+			inputVal = strings.Replace(inputVal, "\n", "<br/>", -1)
 			if ip["is_default"] == true {
-				inputaVal += suffix
+				inputVal += suffix
 			}
 
 			k.Output.Printf(" %s: %s \n",
-				ip["name"], inputaVal)
+				ip["name"], inputVal)
 		}
 	}
 }
