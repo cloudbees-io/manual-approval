@@ -357,7 +357,7 @@ func (k *Config) cancel() error {
 	resp, err := k.post("/v1/workflows/approval/status", body)
 	if err != nil {
 		k.Output.Printf("ERROR: API call failed with error: '%s'\n", err)
-		k.Output.Printf("ERROR RESPONSE: '%s'\n", resp)
+		k.Output.Printf("ERROR: API response: '%s'\n", resp)
 		return err
 	}
 	debugf("Response: '%s'\n", resp)
