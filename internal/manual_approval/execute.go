@@ -195,7 +195,7 @@ func (k *Config) callback() error {
 
 	resp, err := k.post("/v1/workflows/approval/status", parsedPayload)
 	if err != nil {
-		fmt.Printf("ERROR: API call failed with error: '%s'\n", err)
+		k.Output.Printf("ERROR: API call failed with error: '%s'\n", err)
 		k.Output.Printf("ERROR: API response: '%s'\n", resp)
 		ferr := writeStatus("FAILED", fmt.Sprintf("Failed to change workflow manual approval status: '%s'", err))
 		if ferr != nil {
