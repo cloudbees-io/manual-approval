@@ -34,7 +34,7 @@ outputs:
     value: ${{ handlers.callback.outputs.comments }}
 handlers:
   init:
-    uses: docker://020229604682.dkr.ecr.us-east-1.amazonaws.com/custom-jobs/manual-approval:latest
+    uses: docker://020229604682.dkr.ecr.us-east-1.amazonaws.com/custom-jobs/manual-approval:${{ file.scm.sha }}
     command: /usr/local/bin/manual-approval
     args: --handler "init"
     env:
@@ -48,7 +48,7 @@ handlers:
       DEBUG: ${{ inputs.debug }}
 
   callback:
-    uses: docker://020229604682.dkr.ecr.us-east-1.amazonaws.com/custom-jobs/manual-approval:latest
+    uses: docker://020229604682.dkr.ecr.us-east-1.amazonaws.com/custom-jobs/manual-approval:${{ file.scm.sha }}
     command: /usr/local/bin/manual-approval
     args: --handler "callback"
     env:
@@ -58,7 +58,7 @@ handlers:
       DEBUG: ${{ inputs.debug }}
 
   cancel:
-    uses: docker://020229604682.dkr.ecr.us-east-1.amazonaws.com/custom-jobs/manual-approval:latest
+    uses: docker://020229604682.dkr.ecr.us-east-1.amazonaws.com/custom-jobs/manual-approval:${{ file.scm.sha }}
     command: /usr/local/bin/manual-approval
     args: --handler "cancel"
     env:
