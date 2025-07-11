@@ -110,7 +110,7 @@ func Test_init(t *testing.T) {
 				require.Equal(t, []interface{}{"123", "user@mail.com"}, req["approvers"])
 				require.NotNil(t, req["instructions"])
 				require.Equal(t, instructionsInput, req["instructions"].(string))
-				require.Equal(t, false, req["disallowLaunchedByUser"].(bool))
+				require.Equal(t, false, req["disallowLaunchByUser"].(bool))
 				require.Equal(t, false, req["notifyEligibleUsers"].(bool))
 			},
 			respGenFunc: func() (*http.Response, error) {
@@ -142,7 +142,7 @@ func Test_init(t *testing.T) {
 				require.Equal(t, instructionsInput, req["instructions"].(string))
 				require.NotNil(t, req["approvalInputs"])
 				require.Equal(t, approvalInputs, req["approvalInputs"].(string))
-				require.Equal(t, false, req["disallowLaunchedByUser"].(bool))
+				require.Equal(t, false, req["disallowLaunchByUser"].(bool))
 				require.Equal(t, false, req["notifyEligibleUsers"].(bool))
 			},
 			respGenFunc: func() (*http.Response, error) {
@@ -167,13 +167,13 @@ func Test_init(t *testing.T) {
 			err: "",
 		},
 		{
-			name: "success with disallowLaunchedByUser",
+			name: "success with disallowLaunchByUser",
 			reqCheckFunc: func(req map[string]interface{}) {
 				require.NotNil(t, req["approvers"])
 				require.Equal(t, []interface{}{"123", "user@mail.com"}, req["approvers"])
 				require.NotNil(t, req["instructions"])
 				require.Equal(t, instructionsInput, req["instructions"].(string))
-				require.Equal(t, true, req["disallowLaunchedByUser"].(bool))
+				require.Equal(t, true, req["disallowLaunchByUser"].(bool))
 				require.Equal(t, false, req["notifyEligibleUsers"].(bool))
 			},
 			respGenFunc: func() (*http.Response, error) {
@@ -198,13 +198,13 @@ func Test_init(t *testing.T) {
 			err: "",
 		},
 		{
-			name: "failure with invalid disallowLaunchedByUser",
+			name: "failure with invalid disallowLaunchByUser",
 			reqCheckFunc: func(req map[string]interface{}) {
 				require.NotNil(t, req["approvers"])
 				require.Equal(t, []interface{}{"123", "user@mail.com"}, req["approvers"])
 				require.NotNil(t, req["instructions"])
 				require.Equal(t, instructionsInput, req["instructions"].(string))
-				require.Equal(t, true, req["disallowLaunchedByUser"].(bool))
+				require.Equal(t, true, req["disallowLaunchByUser"].(bool))
 				require.Equal(t, false, req["notifyEligibleUsers"].(bool))
 			},
 			respGenFunc: func() (*http.Response, error) {
@@ -232,7 +232,7 @@ func Test_init(t *testing.T) {
 				require.Equal(t, []interface{}{"123", "user@mail.com"}, req["approvers"])
 				require.NotNil(t, req["instructions"])
 				require.Equal(t, instructionsInput, req["instructions"].(string))
-				require.Equal(t, false, req["disallowLaunchedByUser"].(bool))
+				require.Equal(t, false, req["disallowLaunchByUser"].(bool))
 				require.Equal(t, true, req["notifyEligibleUsers"].(bool))
 			},
 			respGenFunc: func() (*http.Response, error) {
@@ -263,7 +263,7 @@ func Test_init(t *testing.T) {
 				require.Equal(t, []interface{}{"123", "user@mail.com"}, req["approvers"])
 				require.NotNil(t, req["instructions"])
 				require.Equal(t, instructionsInput, req["instructions"].(string))
-				require.Equal(t, false, req["disallowLaunchedByUser"].(bool))
+				require.Equal(t, false, req["disallowLaunchByUser"].(bool))
 				require.Equal(t, true, req["notifyEligibleUsers"].(bool))
 			},
 			respGenFunc: func() (*http.Response, error) {
@@ -291,7 +291,7 @@ func Test_init(t *testing.T) {
 				require.Equal(t, []interface{}{"123", "user@mail.com"}, req["approvers"])
 				require.NotNil(t, req["instructions"])
 				require.Equal(t, instructionsInput, req["instructions"].(string))
-				require.Equal(t, false, req["disallowLaunchedByUser"].(bool))
+				require.Equal(t, false, req["disallowLaunchByUser"].(bool))
 				require.Equal(t, false, req["notifyEligibleUsers"].(bool))
 			},
 			respGenFunc: func() (*http.Response, error) {
