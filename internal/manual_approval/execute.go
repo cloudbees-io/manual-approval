@@ -110,7 +110,7 @@ func (k *Config) init() error {
 
 	// Construct request body
 	body := map[string]interface{}{
-		"disallowLaunchedByUser": disallowLaunchedByUser,
+		"disallowLaunchByUser": disallowLaunchedByUser,
 		"notifyEligibleUsers":    notify,
 	}
 
