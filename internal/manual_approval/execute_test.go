@@ -134,6 +134,38 @@ func Test_init(t *testing.T) {
 			err: "",
 		},
 		{
+			name: "success with callback.token",
+			reqCheckFunc: func(req map[string]interface{}) {
+				require.NotNil(t, req["approvers"])
+				require.Equal(t, []interface{}{"123", "user@mail.com"}, req["approvers"])
+				require.NotNil(t, req["instructions"])
+				require.Equal(t, instructionsInput, req["instructions"].(string))
+				require.Equal(t, false, req["disallowLaunchByUser"].(bool))
+				require.Equal(t, false, req["notifyEligibleUsers"].(bool))
+				require.Equal(t, "test-callback-token", req["token"].(string))
+			},
+			respGenFunc: func() (*http.Response, error) {
+				return &http.Response{
+					StatusCode: 200,
+					Status:     "200 OK",
+					Body:       io.NopCloser(bytes.NewBufferString(`{"approvers":[{"userName": "testUserName", "userId": "123", "email": "user@mail.com"}]}`)),
+				}, nil
+			},
+			env: map[string]string{
+				"URL":              "http://test.com",
+				"API_TOKEN":        "test",
+				"CLOUDBEES_STATUS": "/tmp/test-status-out",
+				"APPROVERS":        "123,user@mail.com",
+				"INSTRUCTIONS":     instructionsInput,
+				"CALLBACK_TOKEN":   "test-callback-token",
+			},
+			output: []string{
+				"Waiting for approval from one of the following: testUserName\n",
+				"Instructions:\n<p><em><strong>instruction</strong></em>\n<code>instruction2</code></p>\n<h1>instruction3</h1>\n<h2>instruction4</h2>\n<h3>instruction5</h3>\n<blockquote>\n<p>Blockquotes can contain multiple paragraphs</p>\n<p>Add a &gt; on the blank lines between the paragraps.</p>\n</blockquote>\n<ul>\n<li>Rirst item</li>\n<li>Second Item</li>\n<li>Third item\n<ul>\n<li>Indented item</li>\n<li>Indented item</li>\n</ul>\n</li>\n<li>Fourth item</li>\n</ul>\n\n",
+			},
+			err: "",
+		},
+		{
 			name: "success with inputs",
 			reqCheckFunc: func(req map[string]interface{}) {
 				require.NotNil(t, req["approvers"])

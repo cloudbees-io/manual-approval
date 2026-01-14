@@ -46,6 +46,7 @@ handlers:
       API_TOKEN: ${{ cloudbees.api.token }}
       URL: ${{ cloudbees.api.url }}
       DEBUG: ${{ inputs.debug }}
+      CALLBACK_TOKEN: ${{ callback.token }}
 
   callback:
     uses: docker://public.ecr.aws/l7o7z1g8/custom-jobs/manual-approval:${{ file.scm.sha }}
