@@ -105,13 +105,16 @@ func (k *Config) init() error {
 		return err
 	}
 
+	// callback.token is sensitive info, so not logging it
+	callbackToken := os.Getenv("CALLBACK_TOKEN")
+
 	// get approvalInputs if configured for the manual approval job
 	inputs := os.Getenv("INPUTS")
 
 	// Construct request body
 	body := map[string]interface{}{
 		"disallowLaunchByUser": disallowLaunchedByUser,
-		"notifyEligibleUsers":    notify,
+		"notifyEligibleUsers":  notify,
 	}
 
 	if approvers != "" {
@@ -120,6 +123,10 @@ func (k *Config) init() error {
 
 	if instructions != "" {
 		body["instructions"] = instructions
+	}
+
+	if callbackToken != "" {
+		body["token"] = callbackToken
 	}
 
 	if inputs != "" {
