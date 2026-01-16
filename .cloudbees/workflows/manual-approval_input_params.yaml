@@ -36,7 +36,7 @@ jobs:
   print_outputs:
     steps:
       - name: Print manual approval output params
-        uses: docker://golang:1.20.3-alpine3.17
+        uses: docker://alpine:3.23.2
         shell: sh
         run: |
           echo "Output from custom job:"
