@@ -85,7 +85,7 @@ on:
 jobs:
   build:
     steps:
-      - uses: docker://golang:1.20.3-alpine3.17
+      - uses: docker://alpine:3.23.2
         name: Say hello
         kind: test
         shell: sh
@@ -116,7 +116,7 @@ jobs:
       needs:
         - build-approval
       steps:
-        - uses: docker://golang:1.20.3-alpine3.17
+        - uses: docker://alpine:3.23.2
           name: Echo inputs
           shell: sh
           run: |
