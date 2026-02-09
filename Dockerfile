@@ -14,4 +14,4 @@ FROM gcr.io/distroless/static:nonroot
 
 COPY --from=build /usr/local/bin/manual-approval /usr/local/bin/manual-approval
 
-ENTRYPOINT ["manual-approval"]
+ENTRYPOINT ["/usr/local/bin/manual-approval"]
