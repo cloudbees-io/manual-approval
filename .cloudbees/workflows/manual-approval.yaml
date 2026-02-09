@@ -18,7 +18,7 @@ jobs:
       uses: cloudbees-io/checkout@v1
 
     - name: Unit tests
-      uses: docker://golang:1.25.6-alpine3.23
+      uses: docker://golang:1.25.7-alpine3.23
       run: |
         go test --cover ./...
 
@@ -36,9 +36,18 @@ jobs:
       id: build-image
       uses: cloudbees-io/kaniko@v1
       with:
-        destination: 020229604682.dkr.ecr.us-east-1.amazonaws.com/custom-jobs/manual-approval:${{ cloudbees.scm.sha }},020229604682.dkr.ecr.us-east-1.amazonaws.com/custom-jobs/manual-approval:latest
+        destination: 020229604682.dkr.ecr.us-east-1.amazonaws.com/custom-jobs/manual-approval:${{ cloudbees.scm.sha }}${{ cloudbees.scm.branch == 'main' && ',020229604682.dkr.ecr.us-east-1.amazonaws.com/custom-jobs/manual-approval:latest' || ''}}
         labels: maintainer=cbp-cd-ro-team,email=engineering@cloudbees.io
         registry-mirrors: 020229604682.dkr.ecr.us-east-1.amazonaws.com/docker-hub
+
+    - name: Generate SLSA attestation
+      id: slsa-attestation
+      uses: calculi-corp/slsa-attestation@v1
+      with:
+        image-digest: 020229604682.dkr.ecr.us-east-1.amazonaws.com/custom-jobs/manual-approval@${{ steps.build-image.outputs.digest }}
+        aws-role-to-assume: ${{ vars.oidc_staging_iam_role }}
+        aws-region: us-east-1
+        aws-kms-alias: cbp-dev-kms-key-cosign
 
     - name: Run TruffleHog Container Action
       uses: cloudbees-io/trufflehog-secret-scan-container@v1
