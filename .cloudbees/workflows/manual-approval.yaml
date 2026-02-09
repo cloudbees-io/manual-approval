@@ -47,7 +47,7 @@ jobs:
         image-digest: 020229604682.dkr.ecr.us-east-1.amazonaws.com/custom-jobs/manual-approval@${{ steps.build-image.outputs.digest }}
         aws-role-to-assume: ${{ vars.oidc_staging_iam_role }}
         aws-region: us-east-1
-        aws-kms-alias: cbp-dev-kms-key-cosign          
+        aws-kms-alias: cbp-dev-kms-key-cosign
 
     - name: Run TruffleHog Container Action
       uses: cloudbees-io/trufflehog-secret-scan-container@v1
