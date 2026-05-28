@@ -21,7 +21,7 @@ jobs:
 
     - id: build
       name: Build, scan and push to ECR
-      uses: calculi-corp/cb-internal-shared-actions/build@v8
+      uses: calculi-corp/cb-internal-shared-actions/build/action@v8
       with:
         go-binary-build: "true"
         go-binary-name: manual-approval
@@ -40,10 +40,10 @@ jobs:
         chmod 755 /usr/local/bin/regctl
 
         EXPECTED=${{ steps.build.outputs.digest }}
-        ACTUAL=`regctl image digest 020229604682.dkr.ecr.us-east-1.amazonaws.com/custom-jobs/manual-approval:${{ cloudbees.version }}`
+        ACTUAL=`regctl image digest 020229604682.dkr.ecr.us-east-1.amazonaws.com/custom-jobs/manual-approval:${{ cloudbees.scm.sha }}`
         if [ "$EXPECTED" != "$ACTUAL" ]; then
           echo "expected $EXPECTED, but got $ACTUAL"
           exit 1
         fi
 
-        regctl image inspect 020229604682.dkr.ecr.us-east-1.amazonaws.com/custom-jobs/manual-approval:${{ cloudbees.version }}
+        regctl image inspect 020229604682.dkr.ecr.us-east-1.amazonaws.com/custom-jobs/manual-approval:${{ cloudbees.scm.sha }}
